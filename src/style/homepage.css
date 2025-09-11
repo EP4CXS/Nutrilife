@@ -2,10 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
 .stApp {
-    background: linear-gradient(to bottom right, #f8f0e3, #d6a85e);
+    background: linear-gradient(to bottom, #ffffff 0%, #c3832a 50%);
     font-family: 'Arial', sans-serif;
 }
-
 .navbar {
   display: flex;
   align-items: center;
