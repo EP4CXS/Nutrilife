@@ -19,12 +19,12 @@ tinola = homepage_image("assets/tinola.png")
 
 
 # ---------- LOAD THE CSS ----------
-
 def homepage_css(file_css):
     with open(file_css) as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 homepage_css("style/homepage.css")
+homepage_css("style/mobileView.css")
 
 
 # ------------ LOAD HTML -------------

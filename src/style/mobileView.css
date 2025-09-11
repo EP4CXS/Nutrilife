@@ -1,0 +1,26 @@
+
+.navbar {
+    flex-direction: column;
+    padding: 10px;
+}
+
+.nav-links {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.hero {
+    flex-direction: column;
+    text-align: center;
+}
+
+.hero-text {
+    max-width: 100%;
+}
+
+.hero-img {
+    width: 250px;
+    height: 250px;
+    margin-top: 20px;
+}
