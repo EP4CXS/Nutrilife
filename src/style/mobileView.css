@@ -1,6 +1,10 @@
+.food-subtitle {
+    display: none;
+}
+
 
 @media (max-width: 768px) {
-    /* Navbar adjustments */
+
     .navbar {
         flex-direction: row;
         justify-content: space-between;
@@ -8,14 +12,15 @@
     }
 
     .nav-links {
-        display: none; /* hide nav links, replace with hamburger menu */
+        display: none; 
     }
 
     .btn-login {
-        display: none; /* hide login button for now */
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    /* Hero section adjustments */
     .hero {
         flex-direction: column;
         text-align: center;
@@ -28,30 +33,66 @@
     }
 
     .hero-title {
-        font-size: 2rem;
+        font-size: 50px;
         letter-spacing: -1px;
         transform: none;
+        margin-top: 10px;
     }
 
     .hero-subtitle {
-        font-size: 1rem;
+        font-size: 20px;
         transform: none;
-        margin-bottom: 20px;
+        margin-top: 40px;
     }
 
     .btn-start {
         width: 80%;
-        margin: 0 auto;
+        margin-top: 160px;
+        margin-left: -250px; 
     }
+
 
     .hero-img {
         width: 200px;
         height: 200px;
-        margin: 0 auto;
+        position: relative;
+        transform: translate(-10px, -250px);
+    }
+
+    .food-subtitle {
+        display: block;
+        position: relative;
+        transform: translate(-1px, 20px);
+        font-size: 20px !important;
+        color: #ffffff;
     }
 
     .food-background .decor {
         width: 60px;
         height: 60px;
+        position: relative;
     }
+
+        
+    .food-background .decor.adobo {
+        top: -195px;
+        left: -240px;
+        width: 120px;
+        height: 120px;
+    }
+
+    
+    .food-background .decor.saging {
+        display: none;
+    }
+
+    
+    .food-background .decor.tinola {
+        position: absolute;
+        top: 50px;      
+        left: 270px;   
+        width: 120px;
+        height: 120px;
+    }
+
 }
