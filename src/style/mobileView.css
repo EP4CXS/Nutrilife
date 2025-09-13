@@ -2,8 +2,12 @@
     display: none;
 }
 
-
 @media (max-width: 768px) {
+
+    .stApp {
+        background: linear-gradient(to bottom, #f8f9fa 0%, #c3832a 50%);
+        font-family: 'Arial', sans-serif;
+    }
 
     .navbar {
         flex-direction: row;
@@ -46,53 +50,75 @@
     }
 
     .btn-start {
-        width: 80%;
+        width: 50%;
         margin-top: 160px;
-        margin-left: -250px; 
+        margin-left: -250px;
+        font-size: 25px;
     }
-
 
     .hero-img {
-        width: 200px;
-        height: 200px;
+        width: 300px;
+        height: 300px;
         position: relative;
-        transform: translate(-10px, -250px);
-    }
-
-    .food-subtitle {
-        display: block;
-        position: relative;
-        transform: translate(-1px, 20px);
-        font-size: 20px !important;
-        color: #ffffff;
+        transform: translate(10px, -250px);
     }
 
     .food-background .decor {
         width: 60px;
         height: 60px;
         position: relative;
+        cursor: pointer; /* ✅ clickable */
     }
 
-        
     .food-background .decor.adobo {
-        top: -195px;
-        left: -240px;
-        width: 120px;
-        height: 120px;
+        top: -200px;
+        left: -235px;
+        width: 100px;
+        height: 100px;
     }
 
-    
     .food-background .decor.saging {
         display: none;
     }
 
-    
     .food-background .decor.tinola {
         position: absolute;
-        top: 50px;      
-        left: 270px;   
-        width: 120px;
-        height: 120px;
+        top: 90px;      
+        left: 335px;   
+        width: 100px;
+        height: 100px;
+    }
+
+    /* --- Slide Animations --- */
+    .food-card img {
+        transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    .slide-left {
+        animation: slideLeft 0.4s forwards;
+    }
+
+    .slide-right {
+        animation: slideRight 0.4s forwards;
+    }
+
+    .reset-slide {
+        animation: fadeIn 0.4s forwards;
+    }
+
+    @keyframes slideLeft {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(-100%); opacity: 0; }
+    }
+
+    @keyframes slideRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
     }
 
 }

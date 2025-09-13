@@ -1,5 +1,6 @@
 import streamlit as st
 import base64
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Nutrilife", layout="wide")
 

@@ -10,8 +10,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 30px;
-  max-width: 1900px;    
-  margin: 0 auto;       
+  max-width: 1900px;
+  margin-top: -25px;       
 }
 
 .logo {
@@ -50,7 +50,7 @@
     font-weight: 500;
     color: #333;
     transition: color 0.3s ease;
-    font-size: 25px;
+    font-size: 15px;
     font-family: "Poppins", cursive;
     
 }
@@ -71,9 +71,9 @@
     transition: background 0.3s ease;
     border: none;
     cursor: pointer;
-    width: 160px;
-    height: 55px;
-    font-size: 20px;
+    width: 130px;
+    height: 50px;
+    font-size: 15px;
     font-family: "Poppins", cursive;
 }
 
@@ -95,25 +95,26 @@
 }
 
 .hero-title {
-    font-size: 90px;
+    font-size: 75px;
     font-weight: bold;
     color: black;
     position: relative;
-    transform: translate(100px, 60px);
+    transform: translate(-10px, 30px);
     font-family: "Poppins", cursive;
     letter-spacing: 1px;
-    
+    line-height: 1.1; /* instead of 0.9 */
 }
 
 .hero-subtitle {
     margin: 0 0 70px 0;
-    font-size: 13px;
+    font-size: 20px !important;
     color: rgb(255, 255, 255);
     position: relative;
-    transform: translate(120px, 120px);
-    font-size: 30px;
+    transform: translate(-10px, 60px);
     font-family: "DM Sans", cursive;
-    
+    max-width: none; 
+    white-space: nowrap; 
+    opacity: 0.7;
 }
 
 .btn-start {
@@ -121,12 +122,12 @@
     color: white !important;
     padding: 12px 25px;
     border-radius: 30px;
-    width: 270px;
-    font-size: 30px;
+    width: 200px;
+    font-size: 20px;
     border: none;
     cursor: pointer;
     position: relative;
-    transform: translate(120px, 180px);
+    transform: translate(-10px, 80px);
 }
 
 
@@ -138,9 +139,9 @@
 
 .hero-img {
     position: relative;
-    width: 480px;
-    height: 480px;
-    transform: translate(-150px, 110px);
+    width: 380px;
+    height: 380px;
+    transform: translate(-50px, 30px);
 }
 
 .hero-img img {
@@ -155,14 +156,32 @@
 
 .food-background .decor {
     position: absolute;
-    width: 200px;
-    height: 200px;
+    width: 100px;
+    height: 100px;
     opacity: 1;
     z-index: 1;
 }
 
 
 
-.adobo { top: -36px; left: -200px; transform: rotate(-30deg); }
-.saging { bottom: -200px; right: -30px; transform: rotate(-30deg); }
-.tinola  { bottom: -120px; left: -280px; transform: rotate(-30deg); }
+.adobo {
+    top: -30px;
+    left: -50px;
+    transform: rotate(-30deg);
+    width: 70px !important;
+    height: 70px !important;
+}
+
+.saging {
+    bottom: -100px;
+    right: -30px;
+    transform: rotate(-30deg);
+    width: 70px !important;
+    height: 70px !important;
+}
+
+.tinola  {
+    bottom: -120px;
+    left: -100px;
+    transform: rotate(-30deg);
+}
