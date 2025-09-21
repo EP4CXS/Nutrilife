@@ -12,10 +12,11 @@ def homepage_image(image_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-image = homepage_image("assets/plate.png")
-adobo = homepage_image("assets/adobo.png")
+image = homepage_image("assets/image.png")
 saging = homepage_image("assets/saging.png")
 tinola = homepage_image("assets/tinola.png")
+logo = homepage_image("assets/Nlogo.png")
+bg_homepage = homepage_image("assets/bg.jpg")
 
 
 
@@ -36,4 +37,11 @@ def homepage_html(file_html, **kwargs):
         html = html.format(**kwargs)
     st.markdown(html, unsafe_allow_html=True)
 
-homepage_html("html/homepage.html", image=image, adobo=adobo, saging=saging, tinola=tinola)
+homepage_html(
+    "html/homepage.html",
+    image=image,
+    saging=saging,
+    tinola=tinola,
+    logo=logo,
+    bg_homepage = bg_homepage
+)
