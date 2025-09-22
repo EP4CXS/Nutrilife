@@ -45,13 +45,16 @@ def set_background_image(image_path):
 
 # ---------- Paths ----------
 BASE = os.path.dirname(os.path.abspath(__file__))
-BG = os.path.join(BASE, "assets", "bg.jpg")
-LOGO = os.path.join(BASE, "assets", "Nlogo.png")
+ROOT = os.path.dirname(BASE)   # go up one level (landingPage)
+
+BG = os.path.join(ROOT, "assets", "bg.jpg")
+LOGO = os.path.join(ROOT, "assets", "Nlogo.png")
 SALADS = [
-    os.path.join(BASE, "assets", "salad1.png"),
-    os.path.join(BASE, "assets", "salad2.png"),
-    os.path.join(BASE, "assets", "salad3.png"),
+    os.path.join(ROOT, "assets", "salad1.png"),
+    os.path.join(ROOT, "assets", "salad2.png"),
+    os.path.join(ROOT, "assets", "salad3.png"),
 ]
+
 
 # ---------- Apply background ----------
 set_background_image(BG)
@@ -59,7 +62,6 @@ set_background_image(BG)
 # ---------- Navbar ----------
 if os.path.exists(LOGO):
     logo_b64 = file_to_base64(LOGO)
-    logo_html = f'<img src="data:image/png;base64,{logo_b64}" style="height:40px; margin-right:20px;">'
 else:
     logo_html = "<b style='color:white; font-size:22px;'>NutriLife</b>"
 
