@@ -38,12 +38,5 @@ General Users – Anyone who doesn’t have a consistent eating lifestyle.
 📈 Nutrition tracking & integration with fitness apps.
 
 🔔 Meal reminders & notifications.
-
-
-📂 Project Structure
-Nutrilife/
-│── index.html        # Main landing page
-│── style.css         # App styling
-│── assets/           # Images, icons, and other static assets
-│── README.md   
+ 
 
