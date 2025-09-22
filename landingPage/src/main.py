@@ -62,6 +62,7 @@ set_background_image(BG)
 # ---------- Navbar ----------
 if os.path.exists(LOGO):
     logo_b64 = file_to_base64(LOGO)
+
 else:
     logo_html = "<b style='color:white; font-size:22px;'>NutriLife</b>"
 
