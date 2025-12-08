@@ -5,7 +5,7 @@ import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
 import LandingPage from './pages/landing';
 import AuthLogin from './pages/auth-login';
-import SanjiAICamera from './pages/sanji-ai-camera';
+import AuthSignup from './pages/auth-signup';
 import ProgressTracking from './pages/progress-tracking';
 import Dashboard from './pages/dashboard';
 import RecipeBrowser from './pages/recipe-browser';
@@ -26,10 +26,10 @@ const Routes = () => {
         
         {/* Auth routes */}
         <Route path="/login" element={<AuthLogin />} />
+        <Route path="/signup" element={<AuthSignup />} />
         
         {/* Main app routes */}
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/sanji-ai-camera" element={<SanjiAICamera />} />
         <Route path="/recipe-browser" element={<RecipeBrowser />} />
         <Route path="/recipe-details" element={<RecipeDetails />} />
         <Route path="/meal-plan-generator" element={<MealPlanGenerator />} />

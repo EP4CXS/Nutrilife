@@ -14,9 +14,11 @@ import { getRandomFoods, formatFoodForDisplay, getFoodsByMealType } from '../../
 const Dashboard = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [greetingMessage, setGreetingMessage] = useState('');
 
   // Mock user profile data
-  const userProfile = {
+  const defaultUserProfile = {
     name: "Cape, Jhon lloyd",
     role: "Fitness Enthusiast",
     age: 28,
@@ -90,6 +92,35 @@ const Dashboard = () => {
     loadMeals();
   }, []);
 
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('nutri_user');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        const name = parsed.fullName || parsed.username || parsed.email || 'User';
+
+        setUserProfile({
+          name,
+          role: 'Fitness Enthusiast',
+          age: 28,
+          sex: 'N/A',
+          height: "5'6\"",
+          currentWeight: 145,
+          targetWeight: 135,
+          activityLevel: 'Active',
+          dailyBudget: 25.0
+        });
+      }
+
+      const storedGreeting = localStorage.getItem('nutri_greeting');
+      if (storedGreeting) {
+        setGreetingMessage(storedGreeting);
+      }
+    } catch (e) {
+      console.error('Failed to load user from storage', e);
+    }
+  }, []);
+
   // Mock nutrition progress data
   const nutritionData = {
     calories: { current: 1285, target: 1470 },
@@ -160,7 +191,7 @@ const Dashboard = () => {
           {/* Welcome Section */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground font-heading mb-2">
-              Welcome back, {userProfile?.name}!
+              {greetingMessage || `Welcome back, ${userProfile?.name || 'User'}!`}
             </h1>
             <p className="text-muted-foreground font-body">
               Here's your nutrition overview for today, {new Date()?.toLocaleDateString('en-US', { 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Icon from '../../components/AppIcon';
@@ -29,24 +29,41 @@ const AuthLogin = () => {
     setError('');
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          emailOrUsername: formData.username,
+          password: formData.password
+        })
+      });
 
-      // Check credentials
-      if (formData.username === 'cape' && formData.password === 'cape123') {
-        // Store authentication state
-        localStorage.setItem('nutri_auth', 'true');
-        localStorage.setItem('nutri_user', JSON.stringify({
-          username: formData.username,
-          isAuthenticated: true
-        }));
-        
-        // Navigate to dashboard
-        navigate('/dashboard');
-      } else {
-        setError('Invalid username or password');
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data?.message || 'Invalid username or password');
+        return;
       }
+
+      if (data?.token) {
+        localStorage.setItem('nutri_auth', 'true');
+        localStorage.setItem('nutri_token', data.token);
+      }
+
+      if (data?.user) {
+        localStorage.setItem('nutri_user', JSON.stringify(data.user));
+      }
+
+      if (data?.message) {
+        localStorage.setItem('nutri_greeting', data.message);
+      }
+
+      navigate('/dashboard');
     } catch (err) {
+      console.error('Login error', err);
       setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -154,8 +171,21 @@ const AuthLogin = () => {
               </Button>
             </form>
 
+            {/* Sign Up Link */}
+            <div className="mt-6 pt-6 border-t border-white/10 text-center">
+              <p className="text-gray-300 text-sm">
+                Don't have an account?{' '}
+                <Link
+                  to="/signup"
+                  className="text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+
             {/* Back to Home Button */}
-            <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="mt-4">
               <Button
                 onClick={handleBackToHome}
                 variant="outline"
