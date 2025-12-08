@@ -112,6 +112,13 @@ const Header = () => {
                     <span>Create Profile</span>
                   </button>
                   <button
+                    onClick={() => navigate('/profile')}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-left text-foreground hover:bg-muted rounded-md transition-colors"
+                  >
+                    <Icon name="User" size={16} />
+                    <span>Profile</span>
+                  </button>
+                  <button
                     onClick={isAuthenticated ? handleLogout : () => navigate('/user-login')}
                     className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-left text-foreground hover:bg-muted rounded-md transition-colors"
                   >
@@ -166,6 +173,16 @@ const Header = () => {
               >
                 <Icon name="Settings" size={20} />
                 <span>Create Profile</span>
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/profile');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center space-x-3 px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors touch-target"
+              >
+                <Icon name="User" size={20} />
+                <span>Profile</span>
               </button>
               <button
                 onClick={() => {

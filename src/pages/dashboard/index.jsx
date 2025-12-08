@@ -121,6 +121,52 @@ const Dashboard = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem('nutri_token');
+
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/me/profile', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          console.error('Failed to load profile', await response.text());
+          return;
+        }
+
+        const data = await response.json();
+
+        setUserProfile((prev) => {
+          const base = prev || defaultUserProfile;
+          return {
+            ...base,
+            name: data.full_name || data.username || data.email || base.name,
+            age: data.age || base.age,
+            sex: data.gender || base.sex,
+            height: data.height_cm ? `${data.height_cm} cm` : base.height,
+            currentWeight: data.current_weight_kg || base.currentWeight,
+            targetWeight: data.target_weight_kg || base.targetWeight,
+            activityLevel: data.activity_level || base.activityLevel,
+            dailyBudget: base.dailyBudget,
+          };
+        });
+      } catch (err) {
+        console.error('Error fetching profile', err);
+      }
+    };
+
+    fetchProfile();
+  }, [navigate]);
+
   // Mock nutrition progress data
   const nutritionData = {
     calories: { current: 1285, target: 1470 },
@@ -204,7 +250,7 @@ const Dashboard = () => {
 
           {/* Profile Summary */}
           <div className="mb-8">
-            <ProfileSummaryCard profile={userProfile} />
+            <ProfileSummaryCard profile={userProfile || defaultUserProfile} />
           </div>
 
           {/* Quick Stats Grid */}

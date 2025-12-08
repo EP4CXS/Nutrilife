@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
@@ -49,13 +49,66 @@ const UserProfileCreation = () => {
       fat: 30
     },
     nutritionalFocus: [],
-    
+
     // Budget Settings
     weeklyBudget: '',
     budgetPriority: '',
     shoppingPreference: '',
     organicPreference: false
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem('nutri_token');
+
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/me/profile', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+
+        setProfileData((prev) => ({
+          ...prev,
+          firstName: data.full_name ? data.full_name.split(' ')[0] : prev.firstName,
+          lastName: data.full_name ? data.full_name.split(' ').slice(1).join(' ') : prev.lastName,
+          email: data.email || prev.email,
+          age: data.age ? String(data.age) : prev.age,
+          gender: data.gender || prev.gender,
+          height: data.height_cm ? String(data.height_cm) : prev.height,
+          currentWeight: data.current_weight_kg ? String(data.current_weight_kg) : prev.currentWeight,
+          targetWeight: data.target_weight_kg ? String(data.target_weight_kg) : prev.targetWeight,
+          activityLevel: data.activity_level || prev.activityLevel,
+          primaryGoal: data.health_goals || prev.primaryGoal,
+          dietaryRestrictions: data.dietary_preferences?.dietaryRestrictions || prev.dietaryRestrictions,
+          allergies: data.dietary_preferences?.allergies || prev.allergies,
+          dislikedFoods: data.dietary_preferences?.dislikedFoods || prev.dislikedFoods,
+          cuisinePreferences: data.dietary_preferences?.cuisinePreferences || prev.cuisinePreferences,
+          weeklyBudget: data.budget_settings?.weeklyBudget ? String(data.budget_settings.weeklyBudget) : prev.weeklyBudget,
+          budgetPriority: data.budget_settings?.budgetPriority || prev.budgetPriority,
+          shoppingPreference: data.budget_settings?.shoppingPreference || prev.shoppingPreference,
+          organicPreference: typeof data.budget_settings?.organicPreference === 'boolean'
+            ? data.budget_settings.organicPreference
+            : prev.organicPreference,
+        }));
+      } catch (err) {
+      }
+    };
+
+    fetchProfile();
+  }, [navigate]);
 
   const steps = [
     {
@@ -107,20 +160,56 @@ const UserProfileCreation = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    // Simulate API call to save profile
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const token = localStorage.getItem('nutri_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
-    // Save to localStorage for now
-    localStorage.setItem('nutrilife_user_profile', JSON.stringify({
-      ...profileData,
-      createdAt: new Date()?.toISOString(),
-      isComplete: true
-    }));
+    const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
 
-    setIsSubmitting(false);
+    const payload = {
+      full_name: fullName || null,
+      age: profileData.age ? Number(profileData.age) : null,
+      gender: profileData.gender || null,
+      height_cm: profileData.height ? Number(profileData.height) : null,
+      current_weight_kg: profileData.currentWeight ? Number(profileData.currentWeight) : null,
+      target_weight_kg: profileData.targetWeight ? Number(profileData.targetWeight) : null,
+      activity_level: profileData.activityLevel || null,
+      health_goals: profileData.primaryGoal || null,
+      dietary_preferences: {
+        dietaryRestrictions: profileData.dietaryRestrictions,
+        allergies: profileData.allergies,
+        dislikedFoods: profileData.dislikedFoods,
+        cuisinePreferences: profileData.cuisinePreferences,
+      },
+      budget_settings: {
+        weeklyBudget: profileData.weeklyBudget ? Number(profileData.weeklyBudget) : null,
+        budgetPriority: profileData.budgetPriority || null,
+        shoppingPreference: profileData.shoppingPreference || null,
+        organicPreference: profileData.organicPreference,
+      },
+    };
 
-    // Navigate to dashboard with welcome state
-    navigate('/dashboard', { state: { newProfile: true } });
+    try {
+      const response = await fetch('http://localhost:8080/api/me/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      navigate('/dashboard', { state: { newProfile: true } });
+    } catch (err) {
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isStepValid = () => {
