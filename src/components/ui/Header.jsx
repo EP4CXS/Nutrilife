@@ -9,6 +9,15 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  const isAuthenticated = (() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('nutri_auth') === 'true';
+    } catch (e) {
+      return false;
+    }
+  })();
+
   const navigationItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
     { label: 'Recipes', path: '/recipe-browser', icon: 'BookOpen' },
@@ -31,6 +40,21 @@ const Header = () => {
   const handleCreateProfile = () => {
     navigate('/user-profile-creation');
     setShowProfileMenu(false);
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('nutri_auth');
+      localStorage.removeItem('nutri_token');
+      localStorage.removeItem('nutri_user');
+      localStorage.removeItem('nutri_greeting');
+    } catch (e) {
+      // ignore storage errors
+    }
+
+    setShowProfileMenu(false);
+    setIsMobileMenuOpen(false);
+    navigate('/login');
   };
 
   return (
@@ -88,11 +112,11 @@ const Header = () => {
                     <span>Create Profile</span>
                   </button>
                   <button
-                    onClick={() => navigate('/user-login')}
+                    onClick={isAuthenticated ? handleLogout : () => navigate('/user-login')}
                     className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-left text-foreground hover:bg-muted rounded-md transition-colors"
                   >
-                    <Icon name="LogIn" size={16} />
-                    <span>Login</span>
+                    <Icon name={isAuthenticated ? 'LogOut' : 'LogIn'} size={16} />
+                    <span>{isAuthenticated ? 'Logout' : 'Login'}</span>
                   </button>
                 </div>
               </div>
@@ -145,13 +169,17 @@ const Header = () => {
               </button>
               <button
                 onClick={() => {
-                  navigate('/user-login');
-                  setIsMobileMenuOpen(false);
+                  if (isAuthenticated) {
+                    handleLogout();
+                  } else {
+                    navigate('/user-login');
+                    setIsMobileMenuOpen(false);
+                  }
                 }}
                 className="w-full flex items-center space-x-3 px-3 py-3 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors touch-target"
               >
-                <Icon name="LogIn" size={20} />
-                <span>Login</span>
+                <Icon name={isAuthenticated ? 'LogOut' : 'LogIn'} size={20} />
+                <span>{isAuthenticated ? 'Logout' : 'Login'}</span>
               </button>
             </div>
           </nav>
