@@ -41,7 +41,9 @@ const MealPlanGenerator = () => {
             carbs: parseFloat(formatted.carbs) || 0,
             fat: parseFloat(formatted.fat) || 0,
             fiber: parseFloat(formatted.fiber) || 0,
-            cost: parseFloat(formatted.cost.replace(/[^\d.-]/g, '')) || 5.00
+            cost: parseFloat(formatted.cost.replace(/[^\d.-]/g, '')) || 5.00,
+            tags: formatted.tags || [],
+            dietaryRestrictions: (formatted.dietaryRestrictions || '').toLowerCase()
           };
           
           const mealType = formatted.mealType.toLowerCase();
@@ -71,6 +73,43 @@ const MealPlanGenerator = () => {
     
     loadRecipes();
   }, []);
+
+  // Content-based scoring for a single recipe against plan configuration
+  const scoreRecipe = (recipe, mealType, config) => {
+    let score = 0;
+
+    const prefs = config?.dietaryPreferences || {};
+
+    const dietText = recipe?.dietaryRestrictions || '';
+    const tags = recipe?.tags || [];
+
+    if (prefs.vegetarian && dietText.includes('vegetarian')) score += 3;
+    if (prefs.vegan && dietText.includes('vegan')) score += 3;
+    if (prefs.glutenFree && dietText.includes('gluten-free')) score += 2;
+    if (prefs.dairyFree && dietText.includes('dairy-free')) score += 2;
+
+    if (prefs.lowCarb && recipe.carbs < 30) score += 2;
+    if (prefs.highProtein && recipe.protein > 15) score += 2;
+
+    const totalMealsPerDay = Object.values(config?.mealTypes || {}).filter(Boolean).length || 1;
+    const targetPerMeal = (config?.targetCalories || 2000) / totalMealsPerDay;
+    const calDiff = Math.abs((recipe.calories || 0) - targetPerMeal);
+    if (calDiff < 100) score += 3;
+    else if (calDiff < 200) score += 1;
+
+    if (mealType === 'breakfast' && tags.some(t => t.toLowerCase().includes('breakfast'))) score += 1;
+    if (mealType === 'lunch' && tags.some(t => t.toLowerCase().includes('lunch'))) score += 1;
+    if (mealType === 'dinner' && tags.some(t => t.toLowerCase().includes('dinner'))) score += 1;
+    if (mealType === 'snacks' && tags.some(t => t.toLowerCase().includes('snack'))) score += 1;
+
+    if (config?.dailyBudget) {
+      const maxPerMeal = config.dailyBudget;
+      if (recipe.cost <= maxPerMeal) score += 2;
+      if (recipe.cost > maxPerMeal * 1.5) score -= 2;
+    }
+
+    return score;
+  };
 
   // Fallback mock recipe data (not used if CSV loads)
   const mockRecipes = csvRecipes.breakfast.length > 0 ? csvRecipes : {
@@ -209,11 +248,23 @@ const MealPlanGenerator = () => {
     setIsGenerating(true);
     setPlanConfig(config);
 
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Generate meal plan based on config
     const generatedPlan = [];
+
+    // Precompute sorted candidates per meal type so we can vary meals across days
+    const breakfastCandidates = (mockRecipes?.breakfast || []).slice().sort((a, b) =>
+      scoreRecipe(b, 'breakfast', config) - scoreRecipe(a, 'breakfast', config)
+    );
+    const lunchCandidates = (mockRecipes?.lunch || []).slice().sort((a, b) =>
+      scoreRecipe(b, 'lunch', config) - scoreRecipe(a, 'lunch', config)
+    );
+    const dinnerCandidates = (mockRecipes?.dinner || []).slice().sort((a, b) =>
+      scoreRecipe(b, 'dinner', config) - scoreRecipe(a, 'dinner', config)
+    );
+    const snackCandidates = (mockRecipes?.snacks || []).slice().sort((a, b) =>
+      scoreRecipe(b, 'snacks', config) - scoreRecipe(a, 'snacks', config)
+    );
     
     for (let day = 0; day < config?.planDays; day++) {
       const dayPlan = {
@@ -221,25 +272,24 @@ const MealPlanGenerator = () => {
         meals: {}
       };
 
-      // Add meals based on selected meal types
-      if (config?.mealTypes?.breakfast) {
-        const randomBreakfast = mockRecipes?.breakfast?.[Math.floor(Math.random() * mockRecipes?.breakfast?.length)];
-        dayPlan.meals.breakfast = randomBreakfast;
+      if (config?.mealTypes?.breakfast && breakfastCandidates.length > 0) {
+        const index = day % breakfastCandidates.length;
+        dayPlan.meals.breakfast = breakfastCandidates[index];
       }
 
-      if (config?.mealTypes?.lunch) {
-        const randomLunch = mockRecipes?.lunch?.[Math.floor(Math.random() * mockRecipes?.lunch?.length)];
-        dayPlan.meals.lunch = randomLunch;
+      if (config?.mealTypes?.lunch && lunchCandidates.length > 0) {
+        const index = day % lunchCandidates.length;
+        dayPlan.meals.lunch = lunchCandidates[index];
       }
 
-      if (config?.mealTypes?.dinner) {
-        const randomDinner = mockRecipes?.dinner?.[Math.floor(Math.random() * mockRecipes?.dinner?.length)];
-        dayPlan.meals.dinner = randomDinner;
+      if (config?.mealTypes?.dinner && dinnerCandidates.length > 0) {
+        const index = day % dinnerCandidates.length;
+        dayPlan.meals.dinner = dinnerCandidates[index];
       }
 
-      if (config?.mealTypes?.snacks) {
-        const randomSnack = mockRecipes?.snacks?.[Math.floor(Math.random() * mockRecipes?.snacks?.length)];
-        dayPlan.meals.snacks = randomSnack;
+      if (config?.mealTypes?.snacks && snackCandidates.length > 0) {
+        const index = day % snackCandidates.length;
+        dayPlan.meals.snacks = snackCandidates[index];
       }
 
       generatedPlan?.push(dayPlan);
@@ -292,7 +342,7 @@ const MealPlanGenerator = () => {
     });
   };
 
-  // Load saved meal plan on component mount
+  // Load saved meal plan on mount if available, otherwise initialize with default empty template
   useEffect(() => {
     const savedPlan = localStorage.getItem('savedMealPlan');
     if (savedPlan) {
@@ -300,11 +350,58 @@ const MealPlanGenerator = () => {
         const parsed = JSON.parse(savedPlan);
         setMealPlan(parsed?.plan || []);
         setPlanConfig(parsed?.config || null);
+        return;
       } catch (error) {
         console.error('Error loading saved meal plan:', error);
       }
     }
+
+    const defaultConfig = {
+      planDays: 7,
+      dailyBudget: 25,
+      targetCalories: 2000,
+      mealTypes: {
+        breakfast: true,
+        lunch: true,
+        dinner: true,
+        snacks: true
+      }
+    };
+
+    const emptyPlan = [];
+    for (let day = 0; day < defaultConfig.planDays; day++) {
+      const dayPlan = {
+        date: new Date(Date.now() + day * 24 * 60 * 60 * 1000),
+        meals: {
+          breakfast: null,
+          lunch: null,
+          dinner: null,
+          snacks: null
+        }
+      };
+      emptyPlan.push(dayPlan);
+    }
+
+    setPlanConfig(defaultConfig);
+    setMealPlan(emptyPlan);
   }, []);
+
+  // Auto-save plan whenever it changes so navigation doesn't reset it
+  useEffect(() => {
+    if (!planConfig || !mealPlan || mealPlan.length === 0) return;
+
+    const payload = {
+      plan: mealPlan,
+      config: planConfig,
+      savedAt: new Date()?.toISOString()
+    };
+
+    try {
+      localStorage.setItem('savedMealPlan', JSON.stringify(payload));
+    } catch (error) {
+      console.error('Error auto-saving meal plan:', error);
+    }
+  }, [mealPlan, planConfig]);
 
   // Handle responsive sidebar
   useEffect(() => {

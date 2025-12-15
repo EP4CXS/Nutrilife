@@ -168,28 +168,36 @@ const UserProfileCreation = () => {
 
     const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
 
-    const payload = {
-      full_name: fullName || null,
-      age: profileData.age ? Number(profileData.age) : null,
-      gender: profileData.gender || null,
-      height_cm: profileData.height ? Number(profileData.height) : null,
-      current_weight_kg: profileData.currentWeight ? Number(profileData.currentWeight) : null,
-      target_weight_kg: profileData.targetWeight ? Number(profileData.targetWeight) : null,
-      activity_level: profileData.activityLevel || null,
-      health_goals: profileData.primaryGoal || null,
-      dietary_preferences: {
-        dietaryRestrictions: profileData.dietaryRestrictions,
-        allergies: profileData.allergies,
-        dislikedFoods: profileData.dislikedFoods,
-        cuisinePreferences: profileData.cuisinePreferences,
-      },
-      budget_settings: {
-        weeklyBudget: profileData.weeklyBudget ? Number(profileData.weeklyBudget) : null,
-        budgetPriority: profileData.budgetPriority || null,
-        shoppingPreference: profileData.shoppingPreference || null,
-        organicPreference: profileData.organicPreference,
-      },
-    };
+    // Build payload only with fields the user actually filled in
+    const payload = {};
+
+    if (fullName) payload.full_name = fullName;
+    if (profileData.age) payload.age = Number(profileData.age);
+    if (profileData.gender) payload.gender = profileData.gender;
+    if (profileData.height) payload.height_cm = Number(profileData.height);
+    if (profileData.currentWeight) payload.current_weight_kg = Number(profileData.currentWeight);
+    if (profileData.targetWeight) payload.target_weight_kg = Number(profileData.targetWeight);
+    if (profileData.activityLevel) payload.activity_level = profileData.activityLevel;
+    if (profileData.primaryGoal) payload.health_goals = profileData.primaryGoal;
+
+    const dietary_preferences = {};
+    if (profileData.dietaryRestrictions?.length) dietary_preferences.dietaryRestrictions = profileData.dietaryRestrictions;
+    if (profileData.allergies?.length) dietary_preferences.allergies = profileData.allergies;
+    if (profileData.dislikedFoods?.length) dietary_preferences.dislikedFoods = profileData.dislikedFoods;
+    if (profileData.cuisinePreferences?.length) dietary_preferences.cuisinePreferences = profileData.cuisinePreferences;
+    if (Object.keys(dietary_preferences).length > 0) {
+      payload.dietary_preferences = dietary_preferences;
+    }
+
+    const budget_settings = {};
+    if (profileData.weeklyBudget) budget_settings.weeklyBudget = Number(profileData.weeklyBudget);
+    if (profileData.budgetPriority) budget_settings.budgetPriority = profileData.budgetPriority;
+    if (profileData.shoppingPreference) budget_settings.shoppingPreference = profileData.shoppingPreference;
+    // organicPreference is a boolean toggle; only include if true to avoid forcing backend
+    if (profileData.organicPreference) budget_settings.organicPreference = profileData.organicPreference;
+    if (Object.keys(budget_settings).length > 0) {
+      payload.budget_settings = budget_settings;
+    }
 
     try {
       const response = await fetch('http://localhost:8080/api/me/profile', {
@@ -202,29 +210,24 @@ const UserProfileCreation = () => {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to save profile:', errorText);
+        alert('Could not save profile. Server response: ' + (errorText || response.status));
         return;
       }
 
       navigate('/dashboard', { state: { newProfile: true } });
     } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('An error occurred while saving your profile. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Allow users to complete their profile even if some fields are left empty
   const isStepValid = () => {
-    switch (currentStep) {
-      case 1:
-        return profileData?.firstName && profileData?.lastName && profileData?.age && profileData?.gender;
-      case 2:
-        return profileData?.cookingSkillLevel && profileData?.mealPreparationTime;
-      case 3:
-        return profileData?.primaryGoal && profileData?.targetCalories;
-      case 4:
-        return profileData?.weeklyBudget && profileData?.budgetPriority;
-      default:
-        return true;
-    }
+    return true;
   };
 
   const getCurrentStepComponent = () => {

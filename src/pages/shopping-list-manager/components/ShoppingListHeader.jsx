@@ -34,7 +34,7 @@ const ShoppingListHeader = ({
           <div className="flex items-center space-x-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-foreground font-heading">
-                ${totalCost?.toFixed(2)}
+                ₱{totalCost?.toFixed(2)}
               </p>
               <p className="text-xs text-muted-foreground font-caption">
                 Total Cost

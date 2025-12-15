@@ -81,7 +81,7 @@ const MealSlot = ({ mealType, meal, dayIndex, onReplace, onRemove, isMobile = fa
       <div className="space-y-2">
         <div className="relative">
           <Image
-            src={meal?.image}
+            src={meal?.image || meal?.imageUrl}
             alt={meal?.title}
             className="w-full h-16 object-cover rounded"
           />
@@ -96,7 +96,7 @@ const MealSlot = ({ mealType, meal, dayIndex, onReplace, onRemove, isMobile = fa
               {meal?.calories} cal
             </span>
             <span className="text-xs text-success font-caption">
-              ${meal?.cost}
+              ₱{meal?.cost}
             </span>
           </div>
         </div>

@@ -79,7 +79,7 @@ const PlanConfiguration = ({ onGeneratePlan, isGenerating }) => {
         {/* Daily Budget */}
         <div>
           <Input
-            label="Daily Budget ($)"
+            label="Daily Budget (₱)"
             type="number"
             value={dailyBudget}
             onChange={(e) => setDailyBudget(Number(e?.target?.value))}

@@ -22,7 +22,7 @@ const ProfileSummaryCard = ({ profile }) => {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-primary font-heading">
-            ${profile?.dailyBudget}
+            ₱{typeof profile?.dailyBudget === 'number' ? profile.dailyBudget.toFixed(2) : profile?.dailyBudget}
           </p>
           <p className="text-xs text-muted-foreground font-caption">
             Daily Budget

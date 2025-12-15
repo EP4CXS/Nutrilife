@@ -30,26 +30,73 @@ const Dashboard = () => {
     dailyBudget: 25.00
   };
 
-  // Load today's meal plan data from CSV
+  // Load today's meal plan data
   const [todaysMeals, setTodaysMeals] = useState([]);
   const [isLoadingMeals, setIsLoadingMeals] = useState(true);
 
   useEffect(() => {
     const loadMeals = async () => {
       try {
-        console.log('Loading meals from CSV...');
+        // First, try to read from the saved meal plan used by the planner
+        const savedPlanRaw = localStorage.getItem('savedMealPlan');
+        if (savedPlanRaw) {
+          try {
+            const saved = JSON.parse(savedPlanRaw);
+            const firstDay = saved?.plan?.[0];
+            const dayMeals = firstDay?.meals || {};
+
+            const mappedMeals = ['breakfast', 'lunch', 'dinner', 'snacks']
+              .map((key) => {
+                const meal = dayMeals?.[key];
+                if (!meal) return null;
+                const typeLabel =
+                  key === 'breakfast' ? 'Breakfast' :
+                  key === 'lunch' ? 'Lunch' :
+                  key === 'dinner' ? 'Dinner' :
+                  'Snacks';
+
+                return {
+                  id: meal?.id,
+                  name: meal?.title,
+                  type: typeLabel,
+                  image: meal?.image || meal?.imageUrl,
+                  servings: meal?.servings,
+                  prepTime: meal?.prepTime,
+                  cost: meal?.cost,
+                  calories: meal?.calories,
+                  protein: meal?.protein,
+                  carbs: meal?.carbs,
+                  fat: meal?.fat,
+                  fiber: meal?.fiber,
+                  sugar: meal?.sugar,
+                  sodium: meal?.sodium,
+                  cholesterol: meal?.cholesterol,
+                  rating: meal?.rating || 4,
+                  logged: false,
+                  status: null
+                };
+              })
+              .filter(Boolean);
+
+            if (mappedMeals.length > 0) {
+              setTodaysMeals(mappedMeals);
+              setIsLoadingMeals(false);
+              return;
+            }
+          } catch (e) {
+            console.error('Error parsing saved meal plan for dashboard', e);
+          }
+        }
+
+        // Fallback: load random meals from CSV if no saved plan exists yet
         const foods = await getRandomFoods(4);
-        console.log('Foods loaded:', foods);
-        
         if (!foods || foods.length === 0) {
-          console.warn('No foods returned from CSV');
           setTodaysMeals([]);
           setIsLoadingMeals(false);
           return;
         }
-        
+
         const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
-        
         const meals = foods.map((food, index) => {
           const formatted = formatFoodForDisplay(food);
           return {
@@ -57,8 +104,6 @@ const Dashboard = () => {
             name: formatted.name,
             type: mealTypes[index] || 'Meal',
             image: formatted.imageUrl,
-            
-            // All values from CSV dataset
             servings: formatted.servings,
             prepTime: formatted.prepTime,
             cost: formatted.cost,
@@ -70,15 +115,12 @@ const Dashboard = () => {
             sugar: formatted.sugar,
             sodium: formatted.sodium,
             cholesterol: formatted.cholesterol,
-            
-            // Additional info
             rating: parseFloat(formatted.popularityScore) || 4,
             logged: false,
             status: null
           };
         });
-        
-        console.log('Meals formatted:', meals);
+
         setTodaysMeals(meals);
       } catch (error) {
         console.error('Error loading meals:', error);
@@ -88,7 +130,7 @@ const Dashboard = () => {
         setIsLoadingMeals(false);
       }
     };
-    
+
     loadMeals();
   }, []);
 
@@ -147,6 +189,12 @@ const Dashboard = () => {
 
         setUserProfile((prev) => {
           const base = prev || defaultUserProfile;
+
+          const weeklyBudget = data.budget_settings?.weeklyBudget || null;
+          const dailyBudgetFromProfile = weeklyBudget
+            ? Math.round((weeklyBudget / 7) * 100) / 100
+            : base.dailyBudget;
+
           return {
             ...base,
             name: data.full_name || data.username || data.email || base.name,
@@ -156,7 +204,7 @@ const Dashboard = () => {
             currentWeight: data.current_weight_kg || base.currentWeight,
             targetWeight: data.target_weight_kg || base.targetWeight,
             activityLevel: data.activity_level || base.activityLevel,
-            dailyBudget: base.dailyBudget,
+            dailyBudget: dailyBudgetFromProfile,
           };
         });
       } catch (err) {

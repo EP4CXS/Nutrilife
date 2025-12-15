@@ -79,7 +79,7 @@ const BudgetSettings = ({ data, onUpdate }) => {
         </label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-            $
+            ₱
           </span>
           <Input
             type="number"
@@ -95,7 +95,7 @@ const BudgetSettings = ({ data, onUpdate }) => {
         </div>
         {data?.weeklyBudget && (
           <p className="text-sm text-muted-foreground font-caption mt-1">
-            Daily average: ${calculateDailyBudget()}
+            Daily average: ₱{calculateDailyBudget()}
           </p>
         )}
       </div>
@@ -153,15 +153,15 @@ const BudgetSettings = ({ data, onUpdate }) => {
         </h4>
         <div className="space-y-2 text-xs font-caption">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Budget Meals ($30-50/week):</span>
+            <span className="text-muted-foreground">Budget Meals (₱30-50/week):</span>
             <span className="text-foreground">Rice, beans, seasonal vegetables</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Moderate Meals ($50-100/week):</span>
+            <span className="text-muted-foreground">Moderate Meals (₱50-100/week):</span>
             <span className="text-foreground">Chicken, fish, mix of fresh/frozen</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Premium Meals ($100+/week):</span>
+            <span className="text-muted-foreground">Premium Meals (₱100+/week):</span>
             <span className="text-foreground">Organic, specialty, gourmet ingredients</span>
           </div>
         </div>

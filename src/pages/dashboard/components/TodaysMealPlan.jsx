@@ -11,9 +11,9 @@ const TodaysMealPlan = ({ meals, onLogMeal }) => {
 
   const getTotalNutrition = () => {
     return meals?.reduce((total, meal) => {
-      // Parse cost - extract first number from string like "120-150" or "120"
+      // Parse cost - extract second number from string like "120-150" or single number like "120"
       const costValue = typeof meal?.cost === 'string' 
-        ? parseFloat(meal.cost.replace(/[^\d.-]/g, '').split('-')[0]) || 0
+        ? parseFloat(meal.cost.split('-').pop().trim().replace(/[^\d.-]/g, '')) || 0
         : parseFloat(meal?.cost) || 0;
       
       // Parse calories and protein
@@ -66,7 +66,7 @@ const TodaysMealPlan = ({ meals, onLogMeal }) => {
           </div>
           <div className="text-center">
             <p className="font-semibold text-primary font-body">
-              ${totalNutrition?.cost?.toFixed(2)}
+₱{totalNutrition?.cost?.toFixed(2)}
             </p>
             <p className="text-muted-foreground font-caption">Total Cost</p>
           </div>

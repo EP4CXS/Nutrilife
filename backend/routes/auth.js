@@ -42,9 +42,7 @@ router.post("/signup", async (req, res) => {
 
     const userId = result.insertId;
 
-    // Assign default role "user" (id = 1 if you keep seed order)
-    await query("INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)", [userId, 1]);
-
+    // Use default role "user" without inserting into user_roles
     const token = jwt.sign(
       { id: userId, email, username, roles: ["user"] },
       process.env.JWT_SECRET,
@@ -88,11 +86,8 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const roleRows = await query(
-      "SELECT r.name FROM roles r JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = ?",
-      [user.id]
-    );
-    const roles = roleRows.map((r) => r.name);
+    // Use default role "user" without querying user_roles
+    const roles = ["user"];
 
     const token = jwt.sign(
       { id: user.id, email: user.email, username: user.username, roles },

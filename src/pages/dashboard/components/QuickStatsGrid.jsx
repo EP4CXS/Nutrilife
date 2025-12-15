@@ -19,7 +19,7 @@ const QuickStatsGrid = ({ stats }) => {
     },
     {
       label: 'Budget Used',
-      value: `$${stats?.budgetUsed}/$${stats?.dailyBudget}`,
+      value: `₱${stats?.budgetUsed}/₱${stats?.dailyBudget}`,
       icon: 'DollarSign',
       color: 'text-warning',
       bgColor: 'bg-warning/10'

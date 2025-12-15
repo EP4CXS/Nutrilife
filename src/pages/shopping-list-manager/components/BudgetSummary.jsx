@@ -37,7 +37,7 @@ const BudgetSummary = ({
         {/* Total Cost */}
         <div className="text-center p-4 bg-muted/30 rounded-lg">
           <div className="text-2xl font-bold text-foreground font-heading">
-            ${totalCost?.toFixed(2)}
+            ₱{totalCost?.toFixed(2)}
           </div>
           <div className="text-sm text-muted-foreground font-caption">
             Total Cost
@@ -47,7 +47,7 @@ const BudgetSummary = ({
         {/* Budget Allocated */}
         <div className="text-center p-4 bg-muted/30 rounded-lg">
           <div className="text-2xl font-bold text-foreground font-heading">
-            ${totalBudget?.toFixed(2)}
+            ₱{totalBudget?.toFixed(2)}
           </div>
           <div className="text-sm text-muted-foreground font-caption">
             Budget ({selectedDays} days)
@@ -57,7 +57,7 @@ const BudgetSummary = ({
         {/* Completed Cost */}
         <div className="text-center p-4 bg-muted/30 rounded-lg">
           <div className="text-2xl font-bold text-success font-heading">
-            ${completedCost?.toFixed(2)}
+            ₱{completedCost?.toFixed(2)}
           </div>
           <div className="text-sm text-muted-foreground font-caption">
             Items Bought
@@ -67,7 +67,7 @@ const BudgetSummary = ({
         {/* Remaining Cost */}
         <div className="text-center p-4 bg-muted/30 rounded-lg">
           <div className="text-2xl font-bold text-muted-foreground font-heading">
-            ${remainingCost?.toFixed(2)}
+            ₱{remainingCost?.toFixed(2)}
           </div>
           <div className="text-sm text-muted-foreground font-caption">
             Still to Buy
@@ -88,8 +88,8 @@ const BudgetSummary = ({
             </div>
             <div className="text-sm text-muted-foreground font-body">
               {isOverBudget 
-                ? `$${budgetDifference?.toFixed(2)} over budget`
-                : `$${budgetDifference?.toFixed(2)} ${budgetUsagePercentage > 80 ? 'remaining' : 'under budget'}`
+                ? `₱${budgetDifference?.toFixed(2)} over budget`
+                : `₱${budgetDifference?.toFixed(2)} ${budgetUsagePercentage > 80 ? 'remaining' : 'under budget'}`
               }
             </div>
           </div>

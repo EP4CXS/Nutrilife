@@ -264,7 +264,7 @@ const RecipeSelectionModal = ({ mealType, onSelect, onClose }) => {
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-3 font-caption">
                     <div>Calories: {recipe?.calories}</div>
                     <div>Protein: {recipe?.protein}g</div>
-                    <div>Cost: ${recipe?.cost}</div>
+                    <div>Cost: ₱{recipe?.cost}</div>
                     <div>Prep: {recipe?.prepTime}min</div>
                   </div>
 

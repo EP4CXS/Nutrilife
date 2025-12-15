@@ -120,7 +120,7 @@ const ShoppingListCategory = ({
                     </span>
                     {item?.estimatedCost > 0 && (
                       <span className="text-sm font-medium text-foreground font-body">
-                        ${item?.estimatedCost?.toFixed(2)}
+                        ₱{item?.estimatedCost?.toFixed(2)}
                       </span>
                     )}
                     {item?.recipes && item?.recipes?.length > 0 && (

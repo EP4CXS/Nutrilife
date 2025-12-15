@@ -53,7 +53,7 @@ const MealPlanSelector = ({
             >
               <Checkbox
                 label={day?.name}
-                description={`${day?.mealCount} meals • $${day?.estimatedCost?.toFixed(2)}`}
+                description={`${day?.mealCount} meals ₱${day?.estimatedCost?.toFixed(2)}`}
                 checked={selectedDays?.includes(day?.id)}
                 onChange={() => {
                   if (selectedDays?.includes(day?.id)) {

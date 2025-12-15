@@ -69,7 +69,7 @@ const NutritionSidebar = ({ mealPlan, planConfig, onExportToShoppingList, onSave
     { key: 'carbs', label: 'Carbs', unit: 'g', icon: 'Wheat' },
     { key: 'fat', label: 'Fat', unit: 'g', icon: 'Droplets' },
     { key: 'fiber', label: 'Fiber', unit: 'g', icon: 'Leaf' },
-    { key: 'cost', label: 'Cost', unit: '$', icon: 'DollarSign' }
+    { key: 'cost', label: 'Cost', unit: '₱', icon: 'DollarSign' }
   ];
 
   return (
@@ -137,7 +137,7 @@ const NutritionSidebar = ({ mealPlan, planConfig, onExportToShoppingList, onSave
           </div>
           <div className="text-center p-3 bg-muted/30 rounded-lg">
             <p className="text-2xl font-bold text-success font-heading">
-              ${Math.round(weeklyTotal?.cost * 100) / 100}
+              ₱{Math.round(weeklyTotal?.cost * 100) / 100}
             </p>
             <p className="text-xs text-muted-foreground font-caption">
               Total Cost
