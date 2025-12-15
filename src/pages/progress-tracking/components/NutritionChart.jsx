@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 import Button from '../../../components/ui/Button';
@@ -6,16 +6,72 @@ import Button from '../../../components/ui/Button';
 const NutritionChart = () => {
   const [activeMetric, setActiveMetric] = useState('calories');
   const [chartType, setChartType] = useState('line');
+  const [nutritionData, setNutritionData] = useState([]);
 
-  const nutritionData = [
-    { date: '09/05', calories: 2100, protein: 120, carbs: 250, fat: 70, fiber: 28, target_calories: 2200, target_protein: 130, target_carbs: 275, target_fat: 73, target_fiber: 30 },
-    { date: '09/06', calories: 2350, protein: 140, carbs: 280, fat: 78, fiber: 32, target_calories: 2200, target_protein: 130, target_carbs: 275, target_fat: 73, target_fiber: 30 },
-    { date: '09/07', calories: 1950, protein: 110, carbs: 220, fat: 65, fiber: 25, target_calories: 2200, target_protein: 130, target_carbs: 275, target_fat: 73, target_fiber: 30 },
-    { date: '09/08', calories: 2280, protein: 135, carbs: 265, fat: 76, fiber: 29, target_calories: 2200, target_protein: 130, target_carbs: 275, target_fat: 73, target_fiber: 30 },
-    { date: '09/09', calories: 2150, protein: 125, carbs: 255, fat: 72, fiber: 31, target_calories: 2200, target_protein: 130, target_carbs: 275, target_fat: 73, target_fiber: 30 },
-    { date: '09/10', calories: 2400, protein: 145, carbs: 290, fat: 80, fiber: 33, target_calories: 2200, target_protein: 130, target_carbs: 275, target_fat: 73, target_fiber: 30 },
-    { date: '09/11', calories: 2180, protein: 128, carbs: 260, fat: 74, fiber: 30, target_calories: 2200, target_protein: 130, target_carbs: 275, target_fat: 73, target_fiber: 30 }
-  ];
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('mealLogs');
+      const logs = raw ? JSON.parse(raw) : [];
+
+      // Default daily targets (could be driven by profile in future)
+      const targets = {
+        calories: 2000,
+        protein: 75,
+        carbs: 250,
+        fat: 70,
+        fiber: 30,
+      };
+
+      const parseVal = (val) => {
+        if (typeof val === 'string') {
+          const num = parseFloat(val.replace(/[^\d.-]/g, ''));
+          return Number.isFinite(num) ? num : 0;
+        }
+        const num = parseFloat(val);
+        return Number.isFinite(num) ? num : 0;
+      };
+
+      const data = logs
+        .sort((a, b) => (a.date > b.date ? 1 : -1))
+        .map((log) => {
+          const eatenMeals = (log.meals || []).filter((meal) => meal?.status === 'ate');
+          const totals = eatenMeals.reduce(
+            (acc, meal) => ({
+              calories: acc.calories + parseVal(meal?.calories),
+              protein: acc.protein + parseVal(meal?.protein),
+              carbs: acc.carbs + parseVal(meal?.carbs),
+              fat: acc.fat + parseVal(meal?.fat),
+              fiber: acc.fiber + parseVal(meal?.fiber),
+            }),
+            { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+          );
+
+          const dateLabel = new Date(log.date).toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+          });
+
+          return {
+            date: dateLabel,
+            calories: totals.calories,
+            protein: totals.protein,
+            carbs: totals.carbs,
+            fat: totals.fat,
+            fiber: totals.fiber,
+            target_calories: targets.calories,
+            target_protein: targets.protein,
+            target_carbs: targets.carbs,
+            target_fat: targets.fat,
+            target_fiber: targets.fiber,
+          };
+        });
+
+      setNutritionData(data);
+    } catch (e) {
+      console.error('Failed to load nutrition data from meal logs', e);
+      setNutritionData([]);
+    }
+  }, []);
 
   const metrics = [
     { key: 'calories', label: 'Calories', unit: 'kcal', color: '#2D7D32' },

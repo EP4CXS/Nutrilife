@@ -42,7 +42,9 @@ const Dashboard = () => {
         if (savedPlanRaw) {
           try {
             const saved = JSON.parse(savedPlanRaw);
-            const firstDay = saved?.plan?.[0];
+            const storedDayIndex = parseInt(localStorage.getItem('dashboardCurrentDayIndex') || '0', 10);
+            const dayIndex = Number.isNaN(storedDayIndex) ? 0 : storedDayIndex;
+            const firstDay = saved?.plan?.[dayIndex] || saved?.plan?.[0];
             const dayMeals = firstDay?.meals || {};
 
             const mappedMeals = ['breakfast', 'lunch', 'dinner', 'snacks']
@@ -215,33 +217,230 @@ const Dashboard = () => {
     fetchProfile();
   }, [navigate]);
 
-  // Mock nutrition progress data
-  const nutritionData = {
-    calories: { current: 1285, target: 1470 },
-    protein: { current: 89, target: 101 },
-    carbs: { current: 145, target: 184 },
-    fat: { current: 42, target: 49 },
-    fiber: { current: 18, target: 25 }
+  // Derive daily nutrition progress from today's logged meals
+  const deriveNutritionData = () => {
+    // Only count meals the user marked as "ate"
+    const eatenMeals = todaysMeals?.filter((meal) => meal?.status === 'ate') || [];
+
+    const totals = eatenMeals.reduce(
+      (acc, meal) => {
+        const parseVal = (val) => {
+          if (typeof val === 'string') {
+            const num = parseFloat(val.replace(/[^\d.-]/g, ''));
+            return Number.isFinite(num) ? num : 0;
+          }
+          const num = parseFloat(val);
+          return Number.isFinite(num) ? num : 0;
+        };
+
+        return {
+          calories: acc.calories + parseVal(meal?.calories),
+          protein: acc.protein + parseVal(meal?.protein),
+          carbs: acc.carbs + parseVal(meal?.carbs),
+          fat: acc.fat + parseVal(meal?.fat),
+          fiber: acc.fiber + parseVal(meal?.fiber)
+        };
+      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+    );
+
+    // Simple default targets (could later come from profile/goals)
+    const targets = {
+      calories: 2000,
+      protein: 75,
+      carbs: 250,
+      fat: 70,
+      fiber: 30
+    };
+
+    return {
+      calories: { current: totals.calories, target: targets.calories },
+      protein: { current: totals.protein, target: targets.protein },
+      carbs: { current: totals.carbs, target: targets.carbs },
+      fat: { current: totals.fat, target: targets.fat },
+      fiber: { current: totals.fiber, target: targets.fiber }
+    };
   };
 
-  // Mock quick stats data
-  const quickStats = {
-    mealsLogged: 2,
-    totalMeals: 4,
-    weeklyAdherence: 85,
-    budgetUsed: 15.75,
-    dailyBudget: 25.00,
-    recipesTried: 23
+  const nutritionData = deriveNutritionData();
+
+  // Quick stats derived from today's plan and logged meals
+  const deriveQuickStats = () => {
+    const totalMeals = todaysMeals?.length || 0;
+    const parseVal = (val) => {
+      if (typeof val === 'string') {
+        const num = parseFloat(val.replace(/[^\d.-]/g, ''));
+        return Number.isFinite(num) ? num : 0;
+      }
+      const num = parseFloat(val);
+      return Number.isFinite(num) ? num : 0;
+    };
+
+    let budgetUsed = 0;
+    let dailyBudget = 0;
+    let mealsLogged = 0;
+
+    todaysMeals?.forEach((meal) => {
+      const cost = parseVal(meal?.cost);
+      dailyBudget += cost; // total planned cost for the day
+      if (meal?.status) {
+        mealsLogged += 1;
+        if (meal?.status === 'ate') {
+          budgetUsed += cost; // only count eaten meals
+        }
+      }
+    });
+
+    const weeklyAdherence = totalMeals
+      ? Math.round((mealsLogged / totalMeals) * 100)
+      : 0;
+
+    return {
+      mealsLogged,
+      totalMeals,
+      weeklyAdherence,
+      budgetUsed,
+      dailyBudget,
+      recipesTried: 23
+    };
   };
+
+  const quickStats = deriveQuickStats();
 
   const handleLogMeal = (mealId, status) => {
-    setTodaysMeals(prevMeals =>
-      prevMeals?.map(meal =>
+    setTodaysMeals(prevMeals => {
+      const updatedMeals = prevMeals?.map(meal =>
         meal?.id === mealId
           ? { ...meal, logged: true, status }
           : meal
-      )
-    );
+      );
+
+      try {
+        const now = new Date();
+        const todayKey = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+        const meal = prevMeals?.find(m => m?.id === mealId);
+        if (meal) {
+          const rawLogs = localStorage.getItem('mealLogs');
+          const logs = rawLogs ? JSON.parse(rawLogs) : [];
+
+          const timeString = now.toTimeString().slice(0, 5); // HH:MM
+
+          const parseVal = (val) => {
+            if (typeof val === 'string') {
+              const num = parseFloat(val.replace(/[^\d.-]/g, ''));
+              return Number.isFinite(num) ? num : 0;
+            }
+            const num = parseFloat(val);
+            return Number.isFinite(num) ? num : 0;
+          };
+
+          const parsedCalories = parseVal(meal?.calories);
+          const parsedProtein = parseVal(meal?.protein);
+          const parsedCarbs = parseVal(meal?.carbs);
+          const parsedFat = parseVal(meal?.fat);
+          const parsedFiber = parseVal(meal?.fiber);
+          const parsedCost = parseVal(meal?.cost);
+
+          let dayLog = logs.find(log => log?.date === todayKey);
+          const entry = {
+            id: mealId,
+            name: meal?.type,
+            recipe: meal?.name,
+            status,
+            time: timeString,
+            calories: parsedCalories,
+            protein: parsedProtein,
+            carbs: parsedCarbs,
+            fat: parsedFat,
+            fiber: parsedFiber,
+            cost: parsedCost
+          };
+
+          if (dayLog) {
+            const otherMeals = dayLog.meals?.filter(m => m?.id !== mealId) || [];
+            dayLog.meals = [...otherMeals, entry];
+          } else {
+            dayLog = { date: todayKey, meals: [entry] };
+            logs.push(dayLog);
+          }
+
+          localStorage.setItem('mealLogs', JSON.stringify(logs));
+        }
+      } catch (e) {
+        console.error('Failed to persist meal log', e);
+      }
+
+      return updatedMeals;
+    });
+
+    // After logging, check if all meals for today have been decided (ate or skipped)
+    setTodaysMeals(prevMeals => {
+      const allLogged = prevMeals.length > 0 && prevMeals.every(meal => meal?.status);
+
+      if (!allLogged) {
+        return prevMeals;
+      }
+
+      try {
+        const savedPlanRaw = localStorage.getItem('savedMealPlan');
+        if (!savedPlanRaw) return prevMeals;
+
+        const saved = JSON.parse(savedPlanRaw);
+        const currentIndex = parseInt(localStorage.getItem('dashboardCurrentDayIndex') || '0', 10);
+        const nextIndex = (Number.isNaN(currentIndex) ? 0 : currentIndex) + 1;
+
+        const nextDay = saved?.plan?.[nextIndex];
+        if (!nextDay) {
+          // No more days in the plan; stay on current day
+          return prevMeals;
+        }
+
+        const dayMeals = nextDay?.meals || {};
+        const mappedMeals = ['breakfast', 'lunch', 'dinner', 'snacks']
+          .map((key) => {
+            const meal = dayMeals?.[key];
+            if (!meal) return null;
+            const typeLabel =
+              key === 'breakfast' ? 'Breakfast' :
+              key === 'lunch' ? 'Lunch' :
+              key === 'dinner' ? 'Dinner' :
+              'Snacks';
+
+            return {
+              id: meal?.id,
+              name: meal?.title,
+              type: typeLabel,
+              image: meal?.image || meal?.imageUrl,
+              servings: meal?.servings,
+              prepTime: meal?.prepTime,
+              cost: meal?.cost,
+              calories: meal?.calories,
+              protein: meal?.protein,
+              carbs: meal?.carbs,
+              fat: meal?.fat,
+              fiber: meal?.fiber,
+              sugar: meal?.sugar,
+              sodium: meal?.sodium,
+              cholesterol: meal?.cholesterol,
+              rating: meal?.rating || 4,
+              logged: false,
+              status: null
+            };
+          })
+          .filter(Boolean);
+
+        if (mappedMeals.length === 0) {
+          return prevMeals;
+        }
+
+        localStorage.setItem('dashboardCurrentDayIndex', String(nextIndex));
+        return mappedMeals;
+      } catch (e) {
+        console.error('Failed to advance to next meal plan day', e);
+        return prevMeals;
+      }
+    });
   };
 
   const handleRegeneratePlan = () => {

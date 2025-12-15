@@ -9,35 +9,45 @@ const NutritionProgressChart = ({ nutritionData }) => {
       current: nutritionData?.calories?.current,
       target: nutritionData?.calories?.target,
       unit: 'kcal',
-      percentage: Math.round((nutritionData?.calories?.current / nutritionData?.calories?.target) * 100)
+      percentage: nutritionData?.calories?.target
+        ? Math.round((nutritionData?.calories?.current / nutritionData?.calories?.target) * 100)
+        : 0
     },
     {
       name: 'Protein',
       current: nutritionData?.protein?.current,
       target: nutritionData?.protein?.target,
       unit: 'g',
-      percentage: Math.round((nutritionData?.protein?.current / nutritionData?.protein?.target) * 100)
+      percentage: nutritionData?.protein?.target
+        ? Math.round((nutritionData?.protein?.current / nutritionData?.protein?.target) * 100)
+        : 0
     },
     {
       name: 'Carbs',
       current: nutritionData?.carbs?.current,
       target: nutritionData?.carbs?.target,
       unit: 'g',
-      percentage: Math.round((nutritionData?.carbs?.current / nutritionData?.carbs?.target) * 100)
+      percentage: nutritionData?.carbs?.target
+        ? Math.round((nutritionData?.carbs?.current / nutritionData?.carbs?.target) * 100)
+        : 0
     },
     {
       name: 'Fat',
       current: nutritionData?.fat?.current,
       target: nutritionData?.fat?.target,
       unit: 'g',
-      percentage: Math.round((nutritionData?.fat?.current / nutritionData?.fat?.target) * 100)
+      percentage: nutritionData?.fat?.target
+        ? Math.round((nutritionData?.fat?.current / nutritionData?.fat?.target) * 100)
+        : 0
     },
     {
       name: 'Fiber',
       current: nutritionData?.fiber?.current,
       target: nutritionData?.fiber?.target,
       unit: 'g',
-      percentage: Math.round((nutritionData?.fiber?.current / nutritionData?.fiber?.target) * 100)
+      percentage: nutritionData?.fiber?.target
+        ? Math.round((nutritionData?.fiber?.current / nutritionData?.fiber?.target) * 100)
+        : 0
     }
   ];
 

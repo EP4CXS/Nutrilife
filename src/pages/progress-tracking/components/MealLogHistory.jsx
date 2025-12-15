@@ -1,45 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const MealLogHistory = () => {
-  const [selectedDate, setSelectedDate] = useState('2025-09-11');
+  const [mealLogs, setMealLogs] = useState([]);
+  const [selectedDate, setSelectedDate] = useState('');
 
-  const mealLogs = [
-    {
-      date: '2025-09-11',
-      meals: [
-        { id: 1, name: 'Breakfast', recipe: 'Protein Oatmeal Bowl', status: 'ate', time: '08:30', calories: 420 },
-        { id: 2, name: 'Mid-Morning Snack', recipe: 'Greek Yogurt with Berries', status: 'skipped', time: null, calories: 180 },
-        { id: 3, name: 'Lunch', recipe: 'Grilled Chicken Salad', status: 'ate', time: '12:45', calories: 520 },
-        { id: 4, name: 'Afternoon Snack', recipe: 'Protein Smoothie', status: 'ate', time: '15:20', calories: 280 },
-        { id: 5, name: 'Dinner', recipe: 'Salmon with Quinoa', status: 'ate', time: '19:15', calories: 680 },
-        { id: 6, name: 'Evening Snack', recipe: 'Mixed Nuts', status: 'skipped', time: null, calories: 200 }
-      ]
-    },
-    {
-      date: '2025-09-10',
-      meals: [
-        { id: 7, name: 'Breakfast', recipe: 'Avocado Toast', status: 'ate', time: '08:15', calories: 380 },
-        { id: 8, name: 'Mid-Morning Snack', recipe: 'Apple with Peanut Butter', status: 'ate', time: '10:30', calories: 220 },
-        { id: 9, name: 'Lunch', recipe: 'Turkey Wrap', status: 'ate', time: '13:00', calories: 450 },
-        { id: 10, name: 'Afternoon Snack', recipe: 'Protein Bar', status: 'skipped', time: null, calories: 240 },
-        { id: 11, name: 'Dinner', recipe: 'Beef Stir Fry', status: 'ate', time: '18:45', calories: 620 },
-        { id: 12, name: 'Evening Snack', recipe: 'Dark Chocolate', status: 'ate', time: '21:00', calories: 150 }
-      ]
-    },
-    {
-      date: '2025-09-09',
-      meals: [
-        { id: 13, name: 'Breakfast', recipe: 'Scrambled Eggs with Toast', status: 'ate', time: '08:45', calories: 450 },
-        { id: 14, name: 'Mid-Morning Snack', recipe: 'Banana', status: 'ate', time: '10:15', calories: 120 },
-        { id: 15, name: 'Lunch', recipe: 'Quinoa Buddha Bowl', status: 'ate', time: '12:30', calories: 580 },
-        { id: 16, name: 'Afternoon Snack', recipe: 'Trail Mix', status: 'ate', time: '15:45', calories: 300 },
-        { id: 17, name: 'Dinner', recipe: 'Grilled Fish with Vegetables', status: 'skipped', time: null, calories: 520 },
-        { id: 18, name: 'Evening Snack', recipe: 'Herbal Tea', status: 'ate', time: '20:30', calories: 5 }
-      ]
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('mealLogs');
+      const parsed = raw ? JSON.parse(raw) : [];
+
+      // Sort by date descending (most recent first)
+      const sorted = parsed.sort((a, b) => (a.date < b.date ? 1 : -1));
+      setMealLogs(sorted);
+
+      if (sorted.length > 0) {
+        setSelectedDate(sorted[0].date);
+      }
+    } catch (e) {
+      console.error('Failed to load meal logs from storage', e);
+      setMealLogs([]);
     }
-  ];
+  }, []);
 
   const dates = mealLogs?.map(log => log?.date);
   const currentLog = mealLogs?.find(log => log?.date === selectedDate);
@@ -71,27 +54,37 @@ const MealLogHistory = () => {
         </h3>
         
         {/* Date Selector */}
-        <div className="flex items-center space-x-2">
-          <Icon name="Calendar" size={18} className="text-muted-foreground" />
-          <select
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e?.target?.value)}
-            className="bg-background border border-border rounded-md px-3 py-2 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            {dates?.map(date => (
-              <option key={date} value={date}>
-                {new Date(date)?.toLocaleDateString('en-US', { 
-                  weekday: 'short', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
-              </option>
-            ))}
-          </select>
-        </div>
+        {dates?.length > 0 && (
+          <div className="flex items-center space-x-2">
+            <Icon name="Calendar" size={18} className="text-muted-foreground" />
+            <select
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e?.target?.value)}
+              className="bg-background border border-border rounded-md px-3 py-2 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {dates?.map(date => (
+                <option key={date} value={date}>
+                  {new Date(date)?.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
+      {/* Empty state when no logs */}
+      {!currentLog && (
+        <div className="border border-dashed border-border rounded-lg p-6 text-center mb-4">
+          <p className="text-sm text-muted-foreground font-body">
+            No meal logs yet. Log meals from the dashboard using the "Ate" or "Skipped" buttons.
+          </p>
+        </div>
+      )}
       {/* Day Summary */}
-      {dayStats && (
+      {dayStats && currentLog && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-muted/50 rounded-lg p-3 text-center">
             <div className="text-lg font-bold text-foreground font-heading">
@@ -128,6 +121,7 @@ const MealLogHistory = () => {
         </div>
       )}
       {/* Meal List */}
+      {currentLog && (
       <div className="space-y-3">
         {currentLog?.meals?.map((meal) => (
           <div
@@ -175,6 +169,7 @@ const MealLogHistory = () => {
           </div>
         ))}
       </div>
+      )}
       {/* Mobile Timeline View */}
       <div className="lg:hidden mt-6">
         <div className="relative">

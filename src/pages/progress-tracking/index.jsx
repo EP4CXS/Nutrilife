@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
@@ -15,54 +15,217 @@ import ExportData from './components/ExportData';
 
 const ProgressTracking = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [kpiStats, setKpiStats] = useState({
+    weeklyAdherence: 0,
+    avgDailyNutrition: 0,
+    budgetVariance: 0,
+    mealsCompleted: 0,
+    totalMeals: 0,
+  });
+
+  const [weeklyBudget, setWeeklyBudget] = useState(null);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: 'BarChart3' },
     { id: 'nutrition', label: 'Nutrition', icon: 'Apple' },
     { id: 'meals', label: 'Meal Logs', icon: 'BookOpen' },
-    { id: 'budget', label: 'Budget', icon: 'DollarSign' },
+    { id: 'budget', label: 'Budget', icon: 'Wallet' },
     { id: 'goals', label: 'Goals', icon: 'Target' },
     { id: 'export', label: 'Export', icon: 'Download' }
   ];
 
-  // KPI data
+  // Load weekly budget from profile (same API as dashboard)
+  useEffect(() => {
+    const token = localStorage.getItem('nutri_token');
+    if (!token) return;
+
+    const fetchProfileBudget = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/me/profile', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+          console.error('Failed to load profile for progress tracking', await response.text());
+          return;
+        }
+
+        const data = await response.json();
+        const wb = data.budget_settings?.weeklyBudget;
+        if (typeof wb === 'number') {
+          setWeeklyBudget(wb);
+        }
+      } catch (e) {
+        console.error('Error fetching profile for progress tracking', e);
+      }
+    };
+
+    fetchProfileBudget();
+  }, []);
+
+  // Derive KPI stats from mealLogs and weekly budget
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('mealLogs');
+      const logs = raw ? JSON.parse(raw) : [];
+
+      const now = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(now.getDate() - 6); // include today + previous 6 days
+
+      let totalMeals = 0;
+      let mealsCompleted = 0;
+      let nutritionPercentSum = 0;
+      let nutritionDays = 0;
+      let totalCost = 0;
+
+      const targets = {
+        calories: 2000,
+        protein: 75,
+        carbs: 250,
+        fat: 70,
+        fiber: 30,
+      };
+
+      const parseVal = (val) => {
+        if (typeof val === 'string') {
+          const num = parseFloat(val.replace(/[^\d.-]/g, ''));
+          return Number.isFinite(num) ? num : 0;
+        }
+        const num = parseFloat(val);
+        return Number.isFinite(num) ? num : 0;
+      };
+
+      logs.forEach((log) => {
+        const logDate = new Date(log.date);
+        if (logDate < sevenDaysAgo || logDate > now) return;
+
+        const meals = log.meals || [];
+        if (meals.length === 0) return;
+
+        meals.forEach((meal) => {
+          totalMeals += 1;
+          if (meal.status === 'ate') {
+            mealsCompleted += 1;
+            totalCost += parseVal(meal.cost);
+          }
+        });
+
+        // For avg daily nutrition %, compute based on eaten meals only
+        const eatenMeals = meals.filter((m) => m.status === 'ate');
+        if (eatenMeals.length > 0) {
+          const totals = eatenMeals.reduce(
+            (acc, meal) => ({
+              calories: acc.calories + parseVal(meal.calories),
+              protein: acc.protein + parseVal(meal.protein),
+              carbs: acc.carbs + parseVal(meal.carbs),
+              fat: acc.fat + parseVal(meal.fat),
+              fiber: acc.fiber + parseVal(meal.fiber),
+            }),
+            { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+          );
+
+          const dayPercent =
+            ((totals.calories / targets.calories) +
+              (totals.protein / targets.protein) +
+              (totals.carbs / targets.carbs) +
+              (totals.fat / targets.fat) +
+              (totals.fiber / targets.fiber)) /
+            5;
+
+          nutritionPercentSum += dayPercent * 100;
+          nutritionDays += 1;
+        }
+      });
+
+      const weeklyAdherence = totalMeals
+        ? Math.round((mealsCompleted / totalMeals) * 100)
+        : 0;
+
+      const avgDailyNutrition = nutritionDays
+        ? Math.round(nutritionPercentSum / nutritionDays)
+        : 0;
+
+      const budgetVariance = weeklyBudget != null
+        ? Math.round((totalCost - weeklyBudget) * 100) / 100
+        : 0;
+
+      setKpiStats({
+        weeklyAdherence,
+        avgDailyNutrition,
+        budgetVariance,
+        mealsCompleted,
+        totalMeals,
+      });
+    } catch (e) {
+      console.error('Failed to derive KPI stats from meal logs', e);
+      setKpiStats({
+        weeklyAdherence: 0,
+        avgDailyNutrition: 0,
+        budgetVariance: 0,
+        mealsCompleted: 0,
+        totalMeals: 0,
+      });
+    }
+  }, [weeklyBudget]);
+
+  // KPI data based on derived stats
   const kpiData = [
     {
       title: 'Weekly Adherence',
-      value: '78',
+      value: String(kpiStats.weeklyAdherence),
       unit: '%',
       trend: 'up',
-      trendValue: '+5%',
+      trendValue: '',
       icon: 'TrendingUp',
-      color: 'success'
+      color: 'success',
     },
     {
       title: 'Avg Daily Nutrition',
-      value: '92',
+      value: String(kpiStats.avgDailyNutrition),
       unit: '%',
       trend: 'up',
-      trendValue: '+3%',
+      trendValue: '',
       icon: 'Apple',
-      color: 'primary'
+      color: 'primary',
     },
     {
       title: 'Budget Variance',
-      value: '+4.80',
-      unit: '$',
-      trend: 'up',
-      trendValue: '+2.1%',
-      icon: 'DollarSign',
-      color: 'warning'
+      value: kpiStats.budgetVariance.toFixed(2),
+      unit: '₱',
+      trend: kpiStats.budgetVariance <= 0 ? 'up' : 'down',
+      trendValue: '',
+      icon: null,
+      customIcon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-warning"
+        >
+          <path d="M6 3v18" />
+          <path d="M6 3h9a4 4 0 0 1 0 8H6" />
+          <line x1="6" y1="11" x2="16" y2="11" />
+        </svg>
+      ),
+      color: 'warning',
     },
     {
       title: 'Meals Completed',
-      value: '33',
-      unit: '/42',
+      value: String(kpiStats.mealsCompleted),
+      unit: kpiStats.totalMeals ? `/${kpiStats.totalMeals}` : '',
       trend: 'up',
-      trendValue: '+8%',
+      trendValue: '',
       icon: 'CheckCircle',
-      color: 'accent'
-    }
+      color: 'accent',
+    },
   ];
 
   const renderTabContent = () => {

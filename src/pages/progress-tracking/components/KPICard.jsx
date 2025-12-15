@@ -1,7 +1,7 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 
-const KPICard = ({ title, value, unit, trend, trendValue, icon, color = 'primary' }) => {
+const KPICard = ({ title, value, unit, trend, trendValue, icon, customIcon, color = 'primary' }) => {
   const getTrendIcon = () => {
     if (trend === 'up') return 'TrendingUp';
     if (trend === 'down') return 'TrendingDown';
@@ -18,7 +18,11 @@ const KPICard = ({ title, value, unit, trend, trendValue, icon, color = 'primary
     <div className="bg-card border border-border rounded-lg p-4 lg:p-6">
       <div className="flex items-center justify-between mb-3">
         <div className={`flex items-center justify-center w-10 h-10 bg-${color}/10 rounded-lg`}>
-          <Icon name={icon} size={20} className={`text-${color}`} />
+          {customIcon ? (
+            customIcon
+          ) : (
+            <Icon name={icon} size={20} className={`text-${color}`} />
+          )}
         </div>
         <div className={`flex items-center space-x-1 ${getTrendColor()}`}>
           <Icon name={getTrendIcon()} size={16} />
