@@ -2,7 +2,7 @@ import React from 'react';
 import MealCard from './MealCard';
 import Icon from '../../../components/AppIcon';
 
-const TodaysMealPlan = ({ meals, onLogMeal }) => {
+const TodaysMealPlan = ({ meals, onLogMeal, onAddPlan }) => {
   const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
   
   const getMealsByType = (type) => {
@@ -78,7 +78,11 @@ const TodaysMealPlan = ({ meals, onLogMeal }) => {
           
           if (typeMeals?.length === 0) {
             return (
-              <div key={mealType} className="border border-dashed border-border rounded-lg p-6 text-center">
+              <div
+                key={mealType}
+                className="border border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-muted/20 transition-colors"
+                onClick={onAddPlan}
+              >
                 <Icon name="Plus" size={24} className="text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground font-body">
                   No {mealType?.toLowerCase()} planned

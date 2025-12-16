@@ -321,6 +321,14 @@ const MealPlanGenerator = () => {
     }
 
     setMealPlan(generatedPlan);
+    try {
+      localStorage.setItem('dashboardCurrentDayIndex', '0');
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.removeItem('nutrilife_dashboard_todays_meals');
+      }
+    } catch (e) {
+      console.error('Failed to sync dashboard with new meal plan', e);
+    }
     setIsGenerating(false);
   };
 

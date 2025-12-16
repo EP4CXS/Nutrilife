@@ -47,111 +47,97 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (todaysMeals && todaysMeals.length > 0) {
-      // Meals already loaded for this tab; don't reset when navigating back
       setIsLoadingMeals(false);
       return;
     }
 
-    const loadMeals = async () => {
+    const loadMealsFromSavedPlan = () => {
       try {
-        // First, try to read from the saved meal plan used by the planner
         const savedPlanRaw = localStorage.getItem('savedMealPlan');
-        if (savedPlanRaw) {
-          try {
-            const saved = JSON.parse(savedPlanRaw);
-            const storedDayIndex = parseInt(localStorage.getItem('dashboardCurrentDayIndex') || '0', 10);
-            const dayIndex = Number.isNaN(storedDayIndex) ? 0 : storedDayIndex;
-            const firstDay = saved?.plan?.[dayIndex] || saved?.plan?.[0];
-            const dayMeals = firstDay?.meals || {};
-
-            const mappedMeals = ['breakfast', 'lunch', 'dinner', 'snacks']
-              .map((key) => {
-                const meal = dayMeals?.[key];
-                if (!meal) return null;
-                const typeLabel =
-                  key === 'breakfast' ? 'Breakfast' :
-                  key === 'lunch' ? 'Lunch' :
-                  key === 'dinner' ? 'Dinner' :
-                  'Snacks';
-
-                return {
-                  id: meal?.id,
-                  name: meal?.title,
-                  type: typeLabel,
-                  image: meal?.image || meal?.imageUrl,
-                  servings: meal?.servings,
-                  prepTime: meal?.prepTime,
-                  cost: meal?.cost,
-                  calories: meal?.calories,
-                  protein: meal?.protein,
-                  carbs: meal?.carbs,
-                  fat: meal?.fat,
-                  fiber: meal?.fiber,
-                  sugar: meal?.sugar,
-                  sodium: meal?.sodium,
-                  cholesterol: meal?.cholesterol,
-                  rating: meal?.rating || 4,
-                  logged: false,
-                  status: null
-                };
-              })
-              .filter(Boolean);
-
-            if (mappedMeals.length > 0) {
-              setTodaysMeals(mappedMeals);
-              setIsLoadingMeals(false);
-              return;
-            }
-          } catch (e) {
-            console.error('Error parsing saved meal plan for dashboard', e);
-          }
-        }
-
-        // Fallback: load random meals from CSV if no saved plan exists yet
-        const foods = await getRandomFoods(4);
-        if (!foods || foods.length === 0) {
+        if (!savedPlanRaw) {
           setTodaysMeals([]);
           setIsLoadingMeals(false);
           return;
         }
 
-        const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
-        const meals = foods.map((food, index) => {
-          const formatted = formatFoodForDisplay(food);
-          return {
-            id: formatted.id,
-            name: formatted.name,
-            type: mealTypes[index] || 'Meal',
-            image: formatted.imageUrl,
-            servings: formatted.servings,
-            prepTime: formatted.prepTime,
-            cost: formatted.cost,
-            calories: formatted.calories,
-            protein: formatted.protein,
-            carbs: formatted.carbs,
-            fat: formatted.fat,
-            fiber: formatted.fiber,
-            sugar: formatted.sugar,
-            sodium: formatted.sodium,
-            cholesterol: formatted.cholesterol,
-            rating: parseFloat(formatted.popularityScore) || 4,
-            logged: false,
-            status: null
-          };
-        });
+        const saved = JSON.parse(savedPlanRaw);
+        const planDays = Array.isArray(saved?.plan) ? saved.plan : [];
+        if (planDays.length === 0) {
+          setTodaysMeals([]);
+          setIsLoadingMeals(false);
+          return;
+        }
 
-        setTodaysMeals(meals);
+        const today = new Date();
+        const todayKey = today.toISOString().slice(0, 10);
+
+        const storedDayIndexRaw = localStorage.getItem('dashboardCurrentDayIndex');
+        let dayIndex = storedDayIndexRaw != null ? parseInt(storedDayIndexRaw, 10) : NaN;
+
+        if (Number.isNaN(dayIndex)) {
+          const foundIndex = planDays.findIndex((day) => {
+            if (!day?.date) return false;
+            const dayDate = new Date(day.date);
+            if (Number.isNaN(dayDate.getTime())) return false;
+            return dayDate.toISOString().slice(0, 10) === todayKey;
+          });
+
+          dayIndex = foundIndex >= 0 ? foundIndex : 0;
+          localStorage.setItem('dashboardCurrentDayIndex', String(dayIndex));
+        }
+
+        if (dayIndex < 0 || dayIndex >= planDays.length) {
+          dayIndex = 0;
+          localStorage.setItem('dashboardCurrentDayIndex', '0');
+        }
+
+        const currentDay = planDays[dayIndex];
+        const dayMeals = currentDay?.meals || {};
+
+        const mappedMeals = ['breakfast', 'lunch', 'dinner', 'snacks']
+          .map((key) => {
+            const meal = dayMeals?.[key];
+            if (!meal) return null;
+            const typeLabel =
+              key === 'breakfast' ? 'Breakfast' :
+              key === 'lunch' ? 'Lunch' :
+              key === 'dinner' ? 'Dinner' :
+              'Snacks';
+
+            return {
+              id: meal?.id,
+              name: meal?.title,
+              type: typeLabel,
+              image: meal?.image || meal?.imageUrl,
+              servings: meal?.servings,
+              prepTime: meal?.prepTime,
+              cost: meal?.cost,
+              calories: meal?.calories,
+              protein: meal?.protein,
+              carbs: meal?.carbs,
+              fat: meal?.fat,
+              fiber: meal?.fiber,
+              sugar: meal?.sugar,
+              sodium: meal?.sodium,
+              cholesterol: meal?.cholesterol,
+              rating: meal?.rating || 4,
+              logged: false,
+              status: null
+            };
+          })
+          .filter(Boolean);
+
+        setTodaysMeals(mappedMeals);
+        setIsLoadingMeals(false);
       } catch (error) {
-        console.error('Error loading meals:', error);
+        console.error('Error loading meals from saved plan:', error);
         setError(error.message);
         setTodaysMeals([]);
-      } finally {
         setIsLoadingMeals(false);
       }
     };
-
-    loadMeals();
-  }, [todaysMeals, setIsLoadingMeals]);
+    loadMealsFromSavedPlan();
+  }, [todaysMeals, setTodaysMeals, setIsLoadingMeals]);
 
   useEffect(() => {
     try {
@@ -413,20 +399,14 @@ const Dashboard = () => {
         console.error('Failed to persist meal log', e);
       }
 
-      return updatedMeals;
-    });
-
-    // After logging, check if all meals for today have been decided (ate or skipped)
-    setTodaysMeals(prevMeals => {
-      const allLogged = prevMeals.length > 0 && prevMeals.every(meal => meal?.status);
-
+      const allLogged = updatedMeals.length > 0 && updatedMeals.every(meal => meal?.status);
       if (!allLogged) {
-        return prevMeals;
+        return updatedMeals;
       }
 
       try {
         const savedPlanRaw = localStorage.getItem('savedMealPlan');
-        if (!savedPlanRaw) return prevMeals;
+        if (!savedPlanRaw) return updatedMeals;
 
         const saved = JSON.parse(savedPlanRaw);
         const currentIndex = parseInt(localStorage.getItem('dashboardCurrentDayIndex') || '0', 10);
@@ -435,7 +415,7 @@ const Dashboard = () => {
         const nextDay = saved?.plan?.[nextIndex];
         if (!nextDay) {
           // No more days in the plan; stay on current day
-          return prevMeals;
+          return updatedMeals;
         }
 
         const dayMeals = nextDay?.meals || {};
@@ -473,16 +453,20 @@ const Dashboard = () => {
           .filter(Boolean);
 
         if (mappedMeals.length === 0) {
-          return prevMeals;
+          return updatedMeals;
         }
 
         localStorage.setItem('dashboardCurrentDayIndex', String(nextIndex));
         return mappedMeals;
       } catch (e) {
         console.error('Failed to advance to next meal plan day', e);
-        return prevMeals;
+        return updatedMeals;
       }
     });
+  };
+
+  const handleAddPlan = () => {
+    navigate('/meal-plan-generator');
   };
 
   const handleRegeneratePlan = () => {
@@ -554,6 +538,7 @@ const Dashboard = () => {
               <TodaysMealPlan 
                 meals={todaysMeals} 
                 onLogMeal={handleLogMeal}
+                onAddPlan={handleAddPlan}
               />
             </div>
 
