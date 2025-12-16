@@ -10,12 +10,16 @@ import NutritionProgressChart from './components/NutritionProgressChart';
 import QuickStatsGrid from './components/QuickStatsGrid';
 import TodaysMealPlan from './components/TodaysMealPlan';
 import { getRandomFoods, formatFoodForDisplay, getFoodsByMealType } from '../../utils/foodData';
+import { usePersistentState } from '../../utils/usePersistentState';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [greetingMessage, setGreetingMessage] = useState('');
+  const [greetingMessage, setGreetingMessage] = usePersistentState(
+    'nutrilife_dashboard_greeting',
+    ''
+  );
 
   // Mock user profile data
   const defaultUserProfile = {
@@ -27,14 +31,27 @@ const Dashboard = () => {
     currentWeight: 145,
     targetWeight: 135,
     activityLevel: "Active",
-    dailyBudget: 25.00
+    weeklyBudget: 700,
+    dailyBudget: 100.00
   };
 
-  // Load today's meal plan data
-  const [todaysMeals, setTodaysMeals] = useState([]);
-  const [isLoadingMeals, setIsLoadingMeals] = useState(true);
+  // Load today's meal plan data (persist across navigation in this tab)
+  const [todaysMeals, setTodaysMeals] = usePersistentState(
+    'nutrilife_dashboard_todays_meals',
+    []
+  );
+  const [isLoadingMeals, setIsLoadingMeals] = usePersistentState(
+    'nutrilife_dashboard_loading_meals',
+    true
+  );
 
   useEffect(() => {
+    if (todaysMeals && todaysMeals.length > 0) {
+      // Meals already loaded for this tab; don't reset when navigating back
+      setIsLoadingMeals(false);
+      return;
+    }
+
     const loadMeals = async () => {
       try {
         // First, try to read from the saved meal plan used by the planner
@@ -134,7 +151,7 @@ const Dashboard = () => {
     };
 
     loadMeals();
-  }, []);
+  }, [todaysMeals, setIsLoadingMeals]);
 
   useEffect(() => {
     try {
@@ -142,6 +159,12 @@ const Dashboard = () => {
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
         const name = parsed.fullName || parsed.username || parsed.email || 'User';
+        const storedWeekly =
+          typeof parsed.weeklyBudget === 'number'
+            ? parsed.weeklyBudget
+            : typeof parsed.dailyBudget === 'number'
+            ? parsed.dailyBudget * 7
+            : null;
 
         setUserProfile({
           name,
@@ -152,18 +175,24 @@ const Dashboard = () => {
           currentWeight: parsed.currentWeight || 145,
           targetWeight: parsed.targetWeight || 135,
           activityLevel: 'Active',
-          dailyBudget: typeof parsed.dailyBudget === 'number' ? parsed.dailyBudget : 25.0,
+          weeklyBudget: storedWeekly ?? defaultUserProfile.weeklyBudget,
+          dailyBudget:
+            storedWeekly != null
+              ? Math.round((storedWeekly / 7) * 100) / 100
+              : typeof parsed.dailyBudget === 'number'
+              ? parsed.dailyBudget
+              : defaultUserProfile.dailyBudget,
         });
       }
 
       const storedGreeting = localStorage.getItem('nutri_greeting');
-      if (storedGreeting) {
+      if (storedGreeting && !greetingMessage) {
         setGreetingMessage(storedGreeting);
       }
     } catch (e) {
       console.error('Failed to load user from storage', e);
     }
-  }, []);
+  }, [greetingMessage, setGreetingMessage]);
 
   useEffect(() => {
     const token = localStorage.getItem('nutri_token');
@@ -206,6 +235,7 @@ const Dashboard = () => {
             currentWeight: data.current_weight_kg || base.currentWeight,
             targetWeight: data.target_weight_kg || base.targetWeight,
             activityLevel: data.activity_level || base.activityLevel,
+            weeklyBudget: weeklyBudget ?? base.weeklyBudget,
             dailyBudget: dailyBudgetFromProfile,
           };
         });
@@ -295,12 +325,24 @@ const Dashboard = () => {
       ? Math.round((mealsLogged / totalMeals) * 100)
       : 0;
 
+    const weeklyBudget =
+      typeof userProfile?.weeklyBudget === 'number'
+        ? userProfile.weeklyBudget
+        : typeof userProfile?.dailyBudget === 'number'
+        ? userProfile.dailyBudget * 7
+        : 0;
+
+    const averageDailyBudget = weeklyBudget ? weeklyBudget / 7 : 0;
+    const remainingDailyBudget = Math.max(averageDailyBudget - budgetUsed, 0);
+
     return {
       mealsLogged,
       totalMeals,
       weeklyAdherence,
       budgetUsed,
       dailyBudget,
+      averageDailyBudget,
+      remainingDailyBudget,
       recipesTried: 23
     };
   };

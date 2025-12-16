@@ -18,8 +18,8 @@ const QuickStatsGrid = ({ stats }) => {
       bgColor: 'bg-primary/10'
     },
     {
-      label: 'Daily Budget Used',
-      value: `₱${stats?.budgetUsed?.toFixed(2)} / ₱${stats?.dailyBudget?.toFixed(2)}`,
+      label: 'Daily Budget Remaining',
+      value: `₱${(stats?.remainingDailyBudget ?? 0)?.toFixed(2)}`,
       icon: null,
       customIcon: (
         <svg
@@ -39,7 +39,6 @@ const QuickStatsGrid = ({ stats }) => {
           <line x1="6" y1="11" x2="16" y2="11" />
         </svg>
       ),
-      trend: '+3.2%',
       color: 'text-warning',
       bgColor: 'bg-warning/10'
     },

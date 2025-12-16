@@ -10,14 +10,30 @@ import MealPlanSelector from './components/MealPlanSelector';
 import ManualAddition from './components/ManualAddition';
 import ShoppingListCategory from './components/ShoppingListCategory';
 import BudgetSummary from './components/BudgetSummary';
+import { usePersistentState } from '../../utils/usePersistentState';
 
 const ShoppingListManager = () => {
   const navigate = useNavigate();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [shoppingList, setShoppingList] = useState([]);
-  const [collapsedCategories, setCollapsedCategories] = useState({});
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
+    'nutrilife_shopping_sidebar_collapsed',
+    false
+  );
+  const [isGenerating, setIsGenerating] = usePersistentState(
+    'nutrilife_shopping_is_generating',
+    false
+  );
+  const [selectedDays, setSelectedDays] = usePersistentState(
+    'nutrilife_shopping_selected_days',
+    []
+  );
+  const [shoppingList, setShoppingList] = usePersistentState(
+    'nutrilife_shopping_list',
+    []
+  );
+  const [collapsedCategories, setCollapsedCategories] = usePersistentState(
+    'nutrilife_shopping_collapsed_categories',
+    {}
+  );
 
   // Mock data for available meal plan days
   const availableDays = [
@@ -46,23 +62,6 @@ const ShoppingListManager = () => {
   const userProfile = {
     dailyBudget: 15.00
   };
-
-  // Load saved shopping list from localStorage
-  useEffect(() => {
-    const savedList = localStorage.getItem('nutrilife_shopping_list');
-    if (savedList) {
-      try {
-        setShoppingList(JSON.parse(savedList));
-      } catch (error) {
-        console.error('Error loading shopping list:', error);
-      }
-    }
-  }, []);
-
-  // Save shopping list to localStorage
-  useEffect(() => {
-    localStorage.setItem('nutrilife_shopping_list', JSON.stringify(shoppingList));
-  }, [shoppingList]);
 
   // Generate shopping list from selected meal plan days
   const handleGenerateList = async () => {

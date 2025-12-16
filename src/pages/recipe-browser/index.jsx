@@ -1,28 +1,53 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import Header from '../../components/ui/Header';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import FilterPanel from './components/FilterPanel';
 import SortControls from './components/SortControls';
 import RecipeGrid from './components/RecipeGrid';
 import { getAllFoods, formatFoodForDisplay } from '../../utils/foodData';
+import { usePersistentState } from '../../utils/usePersistentState';
 
 const RecipeBrowser = () => {
-  const [filters, setFilters] = useState({
-    protein: 'all',
-    costRange: [0, 200], // Updated to accommodate Philippine peso prices (₱35-180)
-    prepTime: 'all',
-    roleFit: [],
-    search: ''
-  });
+  const [filters, setFilters] = usePersistentState(
+    'nutrilife_recipe_browser_filters',
+    {
+      protein: 'all',
+      costRange: [0, 200], // Updated to accommodate Philippine peso prices (₱35-180)
+      prepTime: 'all',
+      roleFit: [],
+      search: ''
+    }
+  );
 
-  const [sortBy, setSortBy] = useState('recommended');
-  const [viewMode, setViewMode] = useState('grid');
-  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [recipes, setRecipes] = useState([]);
+  const [sortBy, setSortBy] = usePersistentState(
+    'nutrilife_recipe_browser_sort',
+    'recommended'
+  );
+  const [viewMode, setViewMode] = usePersistentState(
+    'nutrilife_recipe_browser_view_mode',
+    'grid'
+  );
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = usePersistentState(
+    'nutrilife_recipe_browser_filter_panel_open',
+    false
+  );
+  const [loading, setLoading] = usePersistentState(
+    'nutrilife_recipe_browser_loading',
+    true
+  );
+  const [recipes, setRecipes] = usePersistentState(
+    'nutrilife_recipe_browser_recipes',
+    []
+  );
 
   // Load recipes from CSV data
   useEffect(() => {
+    if (recipes && recipes.length > 0) {
+      // Already loaded in this tab; do not re-fetch or reset state
+      setLoading(false);
+      return;
+    }
+
     const loadRecipes = async () => {
       try {
         const foods = await getAllFoods();
@@ -76,9 +101,9 @@ const RecipeBrowser = () => {
         setLoading(false);
       }
     };
-    
+
     loadRecipes();
-  }, []);
+  }, [recipes, setLoading]);
 
   // Filter and sort recipes
   const filteredAndSortedRecipes = useMemo(() => {

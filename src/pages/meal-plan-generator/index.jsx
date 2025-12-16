@@ -8,17 +8,42 @@ import PlanConfiguration from './components/PlanConfiguration';
 import MealPlanCalendar from './components/MealPlanCalendar';
 import NutritionSidebar from './components/NutritionSidebar';
 import { getFoodsByMealType, getRandomFoods, formatFoodForDisplay } from '../../utils/foodData';
+import { usePersistentState } from '../../utils/usePersistentState';
 
 const MealPlanGenerator = () => {
   const navigate = useNavigate();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [mealPlan, setMealPlan] = useState([]);
-  const [planConfig, setPlanConfig] = useState(null);
-  const [showNutritionSidebar, setShowNutritionSidebar] = useState(true);
-  const [csvRecipes, setCsvRecipes] = useState({ breakfast: [], lunch: [], dinner: [], snacks: [] });
+  const [isGenerating, setIsGenerating] = usePersistentState(
+    'nutrilife_meal_plan_is_generating',
+    false
+  );
+  const [mealPlan, setMealPlan] = usePersistentState(
+    'nutrilife_meal_plan_data',
+    []
+  );
+  const [planConfig, setPlanConfig] = usePersistentState(
+    'nutrilife_meal_plan_config',
+    null
+  );
+  const [showNutritionSidebar, setShowNutritionSidebar] = usePersistentState(
+    'nutrilife_meal_plan_show_sidebar',
+    true
+  );
+  const [csvRecipes, setCsvRecipes] = usePersistentState(
+    'nutrilife_meal_plan_csv_recipes',
+    { breakfast: [], lunch: [], dinner: [], snacks: [] }
+  );
 
-  // Load recipes from CSV
+  // Load recipes from CSV (only once per tab)
   useEffect(() => {
+    if (
+      csvRecipes?.breakfast?.length ||
+      csvRecipes?.lunch?.length ||
+      csvRecipes?.dinner?.length ||
+      csvRecipes?.snacks?.length
+    ) {
+      return;
+    }
+
     const loadRecipes = async () => {
       try {
         const allFoods = await getRandomFoods(50);
@@ -72,7 +97,7 @@ const MealPlanGenerator = () => {
     };
     
     loadRecipes();
-  }, []);
+  }, [csvRecipes, setCsvRecipes]);
 
   // Content-based scoring for a single recipe against plan configuration
   const scoreRecipe = (recipe, mealType, config) => {

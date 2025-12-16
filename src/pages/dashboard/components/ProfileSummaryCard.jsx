@@ -3,7 +3,13 @@ import Icon from '../../../components/AppIcon';
 
 const ProfileSummaryCard = ({ profile }) => {
   const completionPercentage = Math.round((profile?.currentWeight / profile?.targetWeight) * 100);
-  
+  const weeklyBudget =
+    typeof profile?.weeklyBudget === 'number'
+      ? profile.weeklyBudget
+      : typeof profile?.dailyBudget === 'number'
+      ? profile.dailyBudget * 7
+      : null;
+
   return (
     <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
       <div className="flex items-start justify-between mb-4">
@@ -22,10 +28,15 @@ const ProfileSummaryCard = ({ profile }) => {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-primary font-heading">
-            ₱{typeof profile?.dailyBudget === 'number' ? profile.dailyBudget.toFixed(2) : profile?.dailyBudget}
+            ₱
+            {weeklyBudget != null
+              ? weeklyBudget.toFixed(2)
+              : typeof profile?.dailyBudget === 'number'
+              ? profile.dailyBudget.toFixed(2)
+              : profile?.dailyBudget}
           </p>
           <p className="text-xs text-muted-foreground font-caption">
-            Daily Budget
+            Weekly Meal Budget
           </p>
         </div>
       </div>

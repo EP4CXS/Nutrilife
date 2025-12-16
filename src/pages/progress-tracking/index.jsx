@@ -12,9 +12,13 @@ import MealLogHistory from './components/MealLogHistory';
 import BudgetTracker from './components/BudgetTracker';
 import GoalAdjustment from './components/GoalAdjustment';
 import ExportData from './components/ExportData';
+import { usePersistentState } from '../../utils/usePersistentState';
 
 const ProgressTracking = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = usePersistentState(
+    'nutrilife_progress_active_tab',
+    'overview'
+  );
   const [kpiStats, setKpiStats] = useState({
     weeklyAdherence: 0,
     avgDailyNutrition: 0,

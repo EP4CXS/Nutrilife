@@ -61,6 +61,20 @@ const AuthLogin = () => {
         localStorage.setItem('nutri_greeting', data.message);
       }
 
+      // Clear any per-session UI state from previous users so the new
+      // account gets a fresh dashboard and feature views.
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          Object.keys(sessionStorage).forEach((key) => {
+            if (key.startsWith('nutrilife_')) {
+              sessionStorage.removeItem(key);
+            }
+          });
+        }
+      } catch {
+        // Ignore storage errors
+      }
+
       navigate('/dashboard');
     } catch (err) {
       console.error('Login error', err);

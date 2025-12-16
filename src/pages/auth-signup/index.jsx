@@ -325,6 +325,20 @@ const AuthSignup = () => {
         }
       }
 
+      // Clear any per-session UI state from previous users so the new
+      // account starts with its own dashboard state.
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          Object.keys(sessionStorage).forEach((key) => {
+            if (key.startsWith('nutrilife_')) {
+              sessionStorage.removeItem(key);
+            }
+          });
+        }
+      } catch {
+        // Ignore storage errors
+      }
+
       navigate('/dashboard');
     } catch (err) {
       setError('An error occurred. Please try again.');
