@@ -15,6 +15,10 @@ const AuthSignup = () => {
     age: '',
     gender: '',
     primaryGoal: '',
+    userType: '',
+    currentWeight: '',
+    targetWeight: '',
+    dailyBudget: '',
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -96,6 +100,34 @@ const AuthSignup = () => {
       setError('Primary goal is required');
       return false;
     }
+    if (!formData.userType.trim()) {
+      setError('User type is required');
+      return false;
+    }
+    if (!formData.currentWeight.trim()) {
+      setError('Current weight is required');
+      return false;
+    }
+    if (Number.isNaN(Number(formData.currentWeight)) || Number(formData.currentWeight) <= 0) {
+      setError('Please enter a valid current weight');
+      return false;
+    }
+    if (!formData.targetWeight.trim()) {
+      setError('Target weight is required');
+      return false;
+    }
+    if (Number.isNaN(Number(formData.targetWeight)) || Number(formData.targetWeight) <= 0) {
+      setError('Please enter a valid target weight');
+      return false;
+    }
+    if (!formData.dailyBudget.trim()) {
+      setError('Daily budget is required');
+      return false;
+    }
+    if (Number.isNaN(Number(formData.dailyBudget)) || Number(formData.dailyBudget) <= 0) {
+      setError('Please enter a valid daily budget');
+      return false;
+    }
     return true;
   };
 
@@ -157,6 +189,34 @@ const AuthSignup = () => {
         setError('Primary goal is required');
         return false;
       }
+      if (!formData.userType.trim()) {
+        setError('User type is required');
+        return false;
+      }
+      if (!formData.currentWeight.trim()) {
+        setError('Current weight is required');
+        return false;
+      }
+      if (Number.isNaN(Number(formData.currentWeight)) || Number(formData.currentWeight) <= 0) {
+        setError('Please enter a valid current weight');
+        return false;
+      }
+      if (!formData.targetWeight.trim()) {
+        setError('Target weight is required');
+        return false;
+      }
+      if (Number.isNaN(Number(formData.targetWeight)) || Number(formData.targetWeight) <= 0) {
+        setError('Please enter a valid target weight');
+        return false;
+      }
+      if (!formData.dailyBudget.trim()) {
+        setError('Daily budget is required');
+        return false;
+      }
+      if (Number.isNaN(Number(formData.dailyBudget)) || Number(formData.dailyBudget) <= 0) {
+        setError('Please enter a valid daily budget');
+        return false;
+      }
       return true;
     }
 
@@ -215,7 +275,11 @@ const AuthSignup = () => {
 
       const userPayload = {
         ...data?.user,
-        fullName: formData.fullName
+        fullName: formData.fullName,
+        userType: formData.userType,
+        currentWeight: formData.currentWeight ? Number(formData.currentWeight) : null,
+        targetWeight: formData.targetWeight ? Number(formData.targetWeight) : null,
+        dailyBudget: formData.dailyBudget ? Number(formData.dailyBudget) : null,
       };
 
       localStorage.setItem('nutri_user', JSON.stringify(userPayload));
@@ -231,8 +295,8 @@ const AuthSignup = () => {
           gender: formData.gender || null,
           health_goals: formData.primaryGoal || null,
           height_cm: null,
-          current_weight_kg: null,
-          target_weight_kg: null,
+          current_weight_kg: formData.currentWeight ? Number(formData.currentWeight) : null,
+          target_weight_kg: formData.targetWeight ? Number(formData.targetWeight) : null,
           activity_level: null,
           dietary_preferences: {
             dietaryRestrictions: [],
@@ -241,7 +305,7 @@ const AuthSignup = () => {
             cuisinePreferences: [],
           },
           budget_settings: {
-            weeklyBudget: null,
+            weeklyBudget: formData.dailyBudget ? Number(formData.dailyBudget) * 7 : null,
             budgetPriority: null,
             shoppingPreference: null,
             organicPreference: false,
@@ -487,6 +551,91 @@ const AuthSignup = () => {
                         General Health & Wellness
                       </option>
                     </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="userType" className="text-sm font-medium text-primary">
+                      User Type
+                    </label>
+                    <select
+                      id="userType"
+                      name="userType"
+                      value={formData.userType}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full rounded-md bg-input text-white border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      required
+                    >
+                      <option value="" className="bg-black text-gray-700">
+                        Select user type
+                      </option>
+                      <option value="student" className="bg-black text-white">
+                        Student
+                      </option>
+                      <option value="employee" className="bg-black text-white">
+                        Employee
+                      </option>
+                      <option value="body-builder" className="bg-black text-white">
+                        Body Builder
+                      </option>
+                      <option value="athlete" className="bg-black text-white">
+                        Athlete
+                      </option>
+                      <option value="senior" className="bg-black text-white">
+                        Senior
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="currentWeight" className="text-sm font-medium text-primary">
+                      Current Weight (lbs)
+                    </label>
+                    <Input
+                      id="currentWeight"
+                      name="currentWeight"
+                      type="number"
+                      placeholder="Enter your current weight"
+                      value={formData.currentWeight}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-full bg-input text-white placeholder-gray-500 border-border focus:border-primary focus:ring-primary"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="targetWeight" className="text-sm font-medium text-primary">
+                      Target Weight (lbs)
+                    </label>
+                    <Input
+                      id="targetWeight"
+                      name="targetWeight"
+                      type="number"
+                      placeholder="Enter your target weight"
+                      value={formData.targetWeight}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-full bg-input text-white placeholder-gray-500 border-border focus:border-primary focus:ring-primary"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="dailyBudget" className="text-sm font-medium text-primary">
+                      Daily Budget (₱)
+                    </label>
+                    <Input
+                      id="dailyBudget"
+                      name="dailyBudget"
+                      type="number"
+                      step="0.01"
+                      placeholder="Enter your daily food budget"
+                      value={formData.dailyBudget}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-full bg-input text-white placeholder-gray-500 border-border focus:border-primary focus:ring-primary"
+                      required
+                    />
                   </div>
                 </>
               )}

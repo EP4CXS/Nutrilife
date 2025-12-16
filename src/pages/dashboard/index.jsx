@@ -145,14 +145,14 @@ const Dashboard = () => {
 
         setUserProfile({
           name,
-          role: 'Fitness Enthusiast',
+          role: parsed.userType || 'Fitness Enthusiast',
           age: 28,
           sex: 'N/A',
           height: "5'6\"",
-          currentWeight: 145,
-          targetWeight: 135,
+          currentWeight: parsed.currentWeight || 145,
+          targetWeight: parsed.targetWeight || 135,
           activityLevel: 'Active',
-          dailyBudget: 25.0
+          dailyBudget: typeof parsed.dailyBudget === 'number' ? parsed.dailyBudget : 25.0,
         });
       }
 
