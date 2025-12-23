@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../../components/ui/Header';
-import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
@@ -20,7 +19,6 @@ const RecipeDetails = () => {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Load recipe from CSV data
   useEffect(() => {
@@ -151,12 +149,8 @@ const RecipeDetails = () => {
         }} />
         
         <Header />
-        <div className="flex">
-          <Sidebar isCollapsed={isSidebarCollapsed} />
-          <main className={`flex-1 transition-all duration-300 ${
-            isSidebarCollapsed ? 'ml-16' : 'ml-64'
-          } mt-16`}>
-            <div className="p-6">
+        <main className="mt-16">
+          <div className="p-6">
               <div className="animate-pulse space-y-6">
                 <div className="h-8 bg-muted rounded w-1/3"></div>
                 <div className="h-64 bg-muted rounded"></div>
@@ -169,8 +163,7 @@ const RecipeDetails = () => {
                 </div>
               </div>
             </div>
-          </main>
-        </div>
+        </main>
       </div>
     );
   }
@@ -185,12 +178,8 @@ const RecipeDetails = () => {
         }} />
         
         <Header />
-        <div className="flex">
-          <Sidebar isCollapsed={isSidebarCollapsed} />
-          <main className={`flex-1 transition-all duration-300 ${
-            isSidebarCollapsed ? 'ml-16' : 'ml-64'
-          } mt-16`}>
-            <div className="p-6">
+        <main className="mt-16">
+          <div className="p-6">
               <div className="text-center py-12">
                 <Icon name="AlertCircle" size={48} className="text-muted-foreground mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-foreground font-heading mb-2">
@@ -209,8 +198,7 @@ const RecipeDetails = () => {
                 </Button>
               </div>
             </div>
-          </main>
-        </div>
+        </main>
       </div>
     );
   }
@@ -224,13 +212,8 @@ const RecipeDetails = () => {
       }} />
       
       <Header />
-      <div className="flex">
-        <Sidebar isCollapsed={isSidebarCollapsed} />
-        
-        <main className={`flex-1 transition-all duration-300 ${
-          isSidebarCollapsed ? 'ml-16' : 'ml-64'
-        } mt-16`}>
-          <div className="p-4 lg:p-6">
+      <main className="mt-16">
+        <div className="p-4 lg:p-6">
             {/* Breadcrumb */}
             <Breadcrumb customBreadcrumbs={breadcrumbs} />
             
@@ -245,16 +228,8 @@ const RecipeDetails = () => {
               >
                 Back
               </Button>
-            </div>
 
-            {/* Recipe Header */}
-            <div className="mb-8">
-              <RecipeHeader recipe={recipe} />
-            </div>
-
-            {/* Mobile Tabs */}
-            <div className="lg:hidden mb-6">
-              <div className="flex space-x-1 bg-muted/30 p-1 rounded-lg overflow-x-auto">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {tabs?.map((tab) => (
                   <button
                     key={tab?.id}
@@ -386,9 +361,8 @@ const RecipeDetails = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };

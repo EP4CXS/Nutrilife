@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
-import Sidebar from '../../components/ui/Sidebar';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
@@ -14,10 +13,6 @@ import { usePersistentState } from '../../utils/usePersistentState';
 
 const ShoppingListManager = () => {
   const navigate = useNavigate();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
-    'nutrilife_shopping_sidebar_collapsed',
-    false
-  );
   const [isGenerating, setIsGenerating] = usePersistentState(
     'nutrilife_shopping_is_generating',
     false
@@ -203,14 +198,9 @@ const ShoppingListManager = () => {
       }} />
       
       <Header />
-      <div className="flex">
-        <Sidebar isCollapsed={isSidebarCollapsed} />
-        
-        <main className={`flex-1 transition-all duration-300 ease-out ${
-          isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-        } mt-16`}>
-          <div className="p-4 lg:p-6 max-w-7xl mx-auto">
-            <Breadcrumb />
+      <main className="mt-16">
+        <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+          <Breadcrumb />
             
             <ShoppingListHeader
               totalItems={totalItems}
@@ -339,20 +329,20 @@ const ShoppingListManager = () => {
             )}
           </div>
         </main>
-      </div>
-      {/* Mobile Floating Action Button */}
-      <div className="lg:hidden">
-        {shoppingList?.length > 0 && (
-          <Button
-            variant="default"
-            size="icon"
-            className="floating-action w-14 h-14"
-            onClick={handleExportCSV}
-          >
-            <Icon name="Download" size={24} />
-          </Button>
-        )}
-      </div>
+
+        {/* Mobile Floating Action Button */}
+        <div className="lg:hidden">
+          {shoppingList?.length > 0 && (
+            <Button
+              variant="default"
+              size="icon"
+              className="floating-action w-14 h-14"
+              onClick={handleExportCSV}
+            >
+              <Icon name="Download" size={24} />
+            </Button>
+          )}
+        </div>
     </div>
   );
 };

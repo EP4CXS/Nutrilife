@@ -8,6 +8,7 @@ const Sidebar = ({ isCollapsed = false }) => {
   const navigationItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard', tooltip: 'View your nutrition overview' },
     { label: 'Recipes', path: '/recipe-browser', icon: 'BookOpen', tooltip: 'Browse and discover recipes' },
+    { label: 'Sanji', path: '/sanji-ai-camera', icon: 'Camera', tooltip: 'Open Sanji AI Camera' },
     { label: 'Plan', path: '/meal-plan-generator', icon: 'Calendar', tooltip: 'Generate meal plans' },
     { label: 'Shop', path: '/shopping-list-manager', icon: 'ShoppingCart', tooltip: 'Manage shopping lists' },
     { label: 'Progress', path: '/progress-tracking', icon: 'TrendingUp', tooltip: 'Track your progress' }

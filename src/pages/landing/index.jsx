@@ -52,6 +52,11 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
+      {/* Dark blur background with gradient */}
+      <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 -z-10" />
+      <div className="fixed inset-0 opacity-30 -z-10" style={{
+        backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(78, 255, 13, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 107, 53, 0.1) 0%, transparent 50%)'
+      }} />
       
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">

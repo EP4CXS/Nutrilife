@@ -14,6 +14,7 @@ import RecipeDetails from './pages/recipe-details';
 import MealPlanGenerator from './pages/meal-plan-generator';
 import UserLogin from './pages/user-login';
 import UserProfileCreation from './pages/user-profile-creation';
+import SanjiAICamera from './pages/sanji-ai-camera';
 
 const Routes = () => {
   return (
@@ -32,6 +33,7 @@ const Routes = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/recipe-browser" element={<RecipeBrowser />} />
         <Route path="/recipe-details" element={<RecipeDetails />} />
+        <Route path="/sanji-ai-camera" element={<SanjiAICamera />} />
         <Route path="/meal-plan-generator" element={<MealPlanGenerator />} />
         <Route path="/shopping-list-manager" element={<ShoppingListManager />} />
         <Route path="/progress-tracking" element={<ProgressTracking />} />

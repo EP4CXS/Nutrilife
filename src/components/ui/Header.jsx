@@ -21,6 +21,7 @@ const Header = () => {
   const navigationItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
     { label: 'Recipes', path: '/recipe-browser', icon: 'BookOpen' },
+    { label: 'Sanji', path: '/sanji-ai-camera', icon: 'Camera' },
     { label: 'Plan', path: '/meal-plan-generator', icon: 'Calendar' },
     { label: 'Shop', path: '/shopping-list-manager', icon: 'ShoppingCart' },
     { label: 'Progress', path: '/progress-tracking', icon: 'TrendingUp' }
