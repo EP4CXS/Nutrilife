@@ -68,9 +68,6 @@ npm run dev
 yarn dev
 
 
-The app will start on   http://localhost:4028/ (Vite default).
-
-
 
 ## 📂 Project Structure
 ```
